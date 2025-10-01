@@ -7,8 +7,8 @@
   <link href="style/main.css" rel="stylesheet" type="text/css">
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x920.png"  media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone, retina -->
+  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x920.png"  media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
@@ -67,9 +67,7 @@
         </div>
       </div>
 
-      <div class="tile-container">
-
-      </div>
+      <div class="tile-container"></div>
     </div>
 
     <p class="game-explanation">
@@ -77,14 +75,15 @@
     </p>
     <hr>
     <p>
-    <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
+      <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
     </p>
     <hr>
     <p>
-    Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
+      Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
     </p>
   </div>
 
+  <!-- 🔹 JS اصلی بازی -->
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
@@ -95,5 +94,71 @@
   <script src="js/local_storage_manager.js"></script>
   <script src="js/game_manager.js"></script>
   <script src="js/application.js"></script>
+
+  <!-- 🔹 Firebase اضافه شده -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-analytics-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+      authDomain: "project-4706304311592930157.firebaseapp.com",
+      projectId: "project-4706304311592930157",
+      storageBucket: "project-4706304311592930157.firebasestorage.app",
+      messagingSenderId: "401832134319",
+      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+      measurementId: "G-LVXWPLG38Q"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const analytics = firebase.analytics();
+
+    // 🔹 دکمه ورود با گوگل (اختیاری)
+    const loginBtn = document.createElement("button");
+    loginBtn.textContent = "ورود با گوگل";
+    loginBtn.style.margin = "10px";
+    document.querySelector(".above-game").appendChild(loginBtn);
+
+    const userName = document.createElement("span");
+    userName.style.marginLeft = "10px";
+    document.querySelector(".above-game").appendChild(userName);
+
+    loginBtn.onclick = () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(result => {
+          userName.textContent = "سلام " + result.user.displayName;
+        })
+        .catch(err => console.error(err));
+    };
+
+    // 🔹 مثال تابع ثبت امتیاز
+    function submitScore(finalScore) {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("لطفاً اول وارد شوید تا امتیاز ثبت شود!");
+        return;
+      }
+
+      const docRef = db.collection("scores").doc(user.uid);
+      docRef.get().then(doc => {
+        if (!doc.exists || finalScore > doc.data().score) {
+          docRef.set({
+            name: user.displayName,
+            score: finalScore,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          alert("امتیاز ثبت شد ✅");
+        } else {
+          alert("این امتیاز کمتر از رکورد قبلی شماست ⬇️");
+        }
+      });
+    }
+  </script>
+
 </body>
 </html>
