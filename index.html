@@ -2,19 +2,11 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>2048</title>
+  <title>2048 Challenge</title>
 
   <link href="style/main.css" rel="stylesheet" type="text/css">
   <link rel="shortcut icon" href="favicon.ico">
-  <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x920.png"  media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 </head>
 <body>
   <div class="container">
@@ -29,6 +21,17 @@
     <div class="above-game">
       <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
       <a class="restart-button">New Game</a>
+
+      <!-- Login و Guest -->
+      <button id="loginBtn">ورود با گوگل</button>
+      <button id="guestBtn">ورود مهمان</button>
+      <span id="userName" style="margin-left:10px;"></span>
+
+      <!-- Leaderboard -->
+      <h3>Leaderboard</h3>
+      <ol id="leaderboard">
+        <li>Loading...</li>
+      </ol>
     </div>
 
     <div class="game-container">
@@ -41,30 +44,10 @@
       </div>
 
       <div class="grid-container">
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
       </div>
 
       <div class="tile-container"></div>
@@ -73,17 +56,9 @@
     <p class="game-explanation">
       <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
     </p>
-    <hr>
-    <p>
-      <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
-    </p>
-    <hr>
-    <p>
-      Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
-    </p>
   </div>
 
-  <!-- 🔹 JS اصلی بازی -->
+  <!-- JS اصلی بازی -->
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
@@ -95,13 +70,14 @@
   <script src="js/game_manager.js"></script>
   <script src="js/application.js"></script>
 
-  <!-- 🔹 Firebase اضافه شده -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-analytics-compat.js"></script>
 
   <script>
+    // 🔹 اطلاعات Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
       authDomain: "project-4706304311592930157.firebaseapp.com",
@@ -117,27 +93,55 @@
     const db = firebase.firestore();
     const analytics = firebase.analytics();
 
-    // 🔹 دکمه ورود با گوگل (اختیاری)
-    const loginBtn = document.createElement("button");
-    loginBtn.textContent = "ورود با گوگل";
-    loginBtn.style.margin = "10px";
-    document.querySelector(".above-game").appendChild(loginBtn);
+    const loginBtn = document.getElementById("loginBtn");
+    const guestBtn = document.getElementById("guestBtn");
+    const userName = document.getElementById("userName");
 
-    const userName = document.createElement("span");
-    userName.style.marginLeft = "10px";
-    document.querySelector(".above-game").appendChild(userName);
-
+    // 🔹 Login گوگل
     loginBtn.onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider)
         .then(result => {
           userName.textContent = "سلام " + result.user.displayName;
+          updateLeaderboard();
         })
         .catch(err => console.error(err));
     };
 
-    // 🔹 مثال تابع ثبت امتیاز
+    // 🔹 Login مهمان
+    guestBtn.onclick = () => {
+      auth.signInAnonymously()
+        .then(() => {
+          const guestName = "مهمان_" + Math.floor(Math.random()*1000);
+          userName.textContent = guestName + " (Guest)";
+          auth.currentUser.updateProfile({ displayName: guestName });
+          alert("شما به صورت مهمان وارد شدید ✅");
+        })
+        .catch(err => console.error(err));
+    };
+
+    // 🔹 زمان چالش
+    let challengeEndTime = null;
+
+    function loadChallengeTime() {
+      db.collection("settings").doc("currentChallenge").get()
+        .then(doc => {
+          if (doc.exists) {
+            challengeEndTime = doc.data().endTime.toDate();
+          } else {
+            challengeEndTime = null;
+          }
+        });
+    }
+
+    // 🔹 ثبت امتیاز
     function submitScore(finalScore) {
+      const now = new Date();
+      if (challengeEndTime && now > challengeEndTime) {
+        alert("چالش تمام شده، امتیاز ثبت نمی‌شود!");
+        return;
+      }
+
       const user = auth.currentUser;
       if (!user) {
         alert("لطفاً اول وارد شوید تا امتیاز ثبت شود!");
@@ -151,14 +155,77 @@
             name: user.displayName,
             score: finalScore,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => {
+            alert("امتیاز ثبت شد ✅");
+            updateLeaderboard();
           });
-          alert("امتیاز ثبت شد ✅");
         } else {
           alert("این امتیاز کمتر از رکورد قبلی شماست ⬇️");
+          updateLeaderboard();
         }
       });
     }
-  </script>
 
+    // 🔹 Leaderboard
+    function updateLeaderboard() {
+      const lb = document.getElementById("leaderboard");
+      lb.innerHTML = "<li>Loading...</li>";
+
+      db.collection("scores")
+        .orderBy("score", "desc")
+        .limit(10)
+        .get()
+        .then(snapshot => {
+          lb.innerHTML = "";
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const li = document.createElement("li");
+            li.textContent = `${data.name}: ${data.score}`;
+            lb.appendChild(li);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          lb.innerHTML = "<li>Error loading leaderboard</li>";
+        });
+    }
+
+    // 🔹 ریست چالش و تعیین زمان
+    const resetBtn = document.createElement("button");
+    resetBtn.textContent = "ریست چالش";
+    resetBtn.style.margin = "10px";
+    document.querySelector(".above-game").appendChild(resetBtn);
+
+    resetBtn.onclick = () => {
+      const durationMinutes = prompt("چند دقیقه چالش باشد؟", "30");
+      if (!durationMinutes) return;
+
+      const endTime = new Date();
+      endTime.setMinutes(endTime.getMinutes() + parseInt(durationMinutes));
+
+      db.collection("settings").doc("currentChallenge").set({
+        endTime: firebase.firestore.Timestamp.fromDate(endTime)
+      }).then(() => {
+        alert("چالش به مدت " + durationMinutes + " دقیقه فعال شد ✅");
+        challengeEndTime = endTime;
+
+        // پاک کردن Leaderboard
+        db.collection("scores").get().then(snapshot => {
+          snapshot.forEach(doc => doc.ref.delete());
+        }).then(() => {
+          updateLeaderboard();
+        });
+      });
+    };
+
+    // 🔹 بارگذاری اولیه و آپدیت Leaderboard
+    window.addEventListener("load", () => {
+      loadChallengeTime();
+      updateLeaderboard();
+
+      // آپدیت خودکار هر 30 ثانیه
+      setInterval(() => { updateLeaderboard(); }, 30000);
+    });
+  </script>
 </body>
 </html>
