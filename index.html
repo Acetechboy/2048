@@ -54,68 +54,71 @@
     </p>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-      authDomain: "project-4706304311592930157.firebaseapp.com",
-      projectId: "project-4706304311592930157",
-      storageBucket: "project-4706304311592930157.firebasestorage.app",
-      messagingSenderId: "401832134319",
-      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-      measurementId: "G-LVXWPLG38Q"
-    };
+<script>
+  // تنظیمات پروژه Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+    authDomain: "project-4706304311592930157.firebaseapp.com",
+    projectId: "project-4706304311592930157",
+    storageBucket: "project-4706304311592930157.firebasestorage.app",
+    messagingSenderId: "401832134319",
+    appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+    measurementId: "G-LVXWPLG38Q"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  // مقداردهی اولیه
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    // ورود با گوگل
-    async function loginWithGoogle() {
+  // ورود مهمان
+  async function loginAsGuest() {
+    try {
+      const userCred = await auth.signInAnonymously();
+      alert("وارد شدید به عنوان مهمان: " + userCred.user.uid);
+    } catch (err) {
+      console.error(err);
+      alert("خطا در ورود مهمان: " + err.message);
+    }
+  }
+
+  // ورود با گوگل
+  async function loginWithGoogle() {
+    try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        const result = await auth.signInWithPopup(provider);
-        alert("وارد شدی: " + result.user.displayName);
-      } catch (err) {
-        alert("خطا در ورود با گوگل");
-        console.error(err);
-      }
+      const result = await auth.signInWithPopup(provider);
+      alert("وارد شدید با گوگل: " + result.user.displayName);
+    } catch (err) {
+      console.error(err);
+      alert("خطا در ورود گوگل: " + err.message);
     }
+  }
 
-    // ورود مهمان
-    async function loginAsGuest() {
-      try {
-        const result = await auth.signInAnonymously();
-        alert("به عنوان مهمان وارد شدی!");
-      } catch (err) {
-        alert("خطا در ورود مهمان");
-        console.error(err);
-      }
+  // ذخیره امتیاز تستی
+  async function saveTestScore() {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("باید اول وارد شوید");
+      return;
     }
-
-    // ذخیره امتیاز
-    async function saveScore(score) {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("باید اول وارد بشی!");
-        return;
-      }
-      try {
-        await db.collection("leaderboard").doc(user.uid).set({
-          uid: user.uid,
-          score: score,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log("امتیاز ذخیره شد:", score);
-      } catch (err) {
-        console.error("خطا در ذخیره امتیاز:", err);
-      }
+    try {
+      await db.collection("leaderboard").doc(user.uid).set({
+        name: user.isAnonymous ? "مهمان" : user.displayName || "کاربر",
+        score: Math.floor(Math.random() * 1000),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      alert("امتیاز تستی ذخیره شد!");
+    } catch (err) {
+      console.error(err);
+      alert("خطا در ذخیره امتیاز: " + err.message);
     }
-  </script>
+  }
+</script>
 
   <!-- فایل‌های اصلی بازی -->
   <script src="js/bind_polyfill.js"></script>
