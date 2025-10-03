@@ -8,6 +8,7 @@
   <link rel="shortcut icon" href="favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 </head>
+
 <body>
   <div class="container">
     <div class="heading">
@@ -21,24 +22,19 @@
     <div class="above-game">
       <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
       <a class="restart-button">New Game</a>
+    </div>
 
-      <!-- Login و Guest -->
-      <button id="loginBtn">ورود با گوگل</button>
-      <button id="guestBtn">ورود مهمان</button>
-      <span id="userName" style="margin-left:10px;"></span>
-
-      <!-- Leaderboard -->
-      <h3>Leaderboard</h3>
-      <ol id="leaderboard">
-        <li>Loading...</li>
-      </ol>
+    <!-- دکمه‌های ورود -->
+    <div style="margin: 10px 0;">
+      <button onclick="loginWithGoogle()">ورود با گوگل</button>
+      <button onclick="loginAsGuest()">ورود مهمان</button>
     </div>
 
     <div class="game-container">
       <div class="game-message">
         <p></p>
         <div class="lower">
-	        <a class="keep-playing-button">Keep going</a>
+          <a class="keep-playing-button">Keep going</a>
           <a class="retry-button">Try again</a>
         </div>
       </div>
@@ -54,30 +50,16 @@
     </div>
 
     <p class="game-explanation">
-      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+      <strong>How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
     </p>
   </div>
 
-  <!-- JS اصلی بازی -->
-  <script src="js/bind_polyfill.js"></script>
-  <script src="js/classlist_polyfill.js"></script>
-  <script src="js/animframe_polyfill.js"></script>
-  <script src="js/keyboard_input_manager.js"></script>
-  <script src="js/html_actuator.js"></script>
-  <script src="js/grid.js"></script>
-  <script src="js/tile.js"></script>
-  <script src="js/local_storage_manager.js"></script>
-  <script src="js/game_manager.js"></script>
-  <script src="js/application.js"></script>
-
-  <!-- Firebase -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-analytics-compat.js"></script>
 
   <script>
-    // 🔹 اطلاعات Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
       authDomain: "project-4706304311592930157.firebaseapp.com",
@@ -91,141 +73,60 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const analytics = firebase.analytics();
 
-    const loginBtn = document.getElementById("loginBtn");
-    const guestBtn = document.getElementById("guestBtn");
-    const userName = document.getElementById("userName");
-
-    // 🔹 Login گوگل
-    loginBtn.onclick = () => {
+    // ورود با گوگل
+    async function loginWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then(result => {
-          userName.textContent = "سلام " + result.user.displayName;
-          updateLeaderboard();
-        })
-        .catch(err => console.error(err));
-    };
-
-    // 🔹 Login مهمان
-    guestBtn.onclick = () => {
-      auth.signInAnonymously()
-        .then(() => {
-          const guestName = "مهمان_" + Math.floor(Math.random()*1000);
-          userName.textContent = guestName + " (Guest)";
-          auth.currentUser.updateProfile({ displayName: guestName });
-          alert("شما به صورت مهمان وارد شدید ✅");
-        })
-        .catch(err => console.error(err));
-    };
-
-    // 🔹 زمان چالش
-    let challengeEndTime = null;
-
-    function loadChallengeTime() {
-      db.collection("settings").doc("currentChallenge").get()
-        .then(doc => {
-          if (doc.exists) {
-            challengeEndTime = doc.data().endTime.toDate();
-          } else {
-            challengeEndTime = null;
-          }
-        });
+      try {
+        const result = await auth.signInWithPopup(provider);
+        alert("وارد شدی: " + result.user.displayName);
+      } catch (err) {
+        alert("خطا در ورود با گوگل");
+        console.error(err);
+      }
     }
 
-    // 🔹 ثبت امتیاز
-    function submitScore(finalScore) {
-      const now = new Date();
-      if (challengeEndTime && now > challengeEndTime) {
-        alert("چالش تمام شده، امتیاز ثبت نمی‌شود!");
-        return;
+    // ورود مهمان
+    async function loginAsGuest() {
+      try {
+        const result = await auth.signInAnonymously();
+        alert("به عنوان مهمان وارد شدی!");
+      } catch (err) {
+        alert("خطا در ورود مهمان");
+        console.error(err);
       }
+    }
 
+    // ذخیره امتیاز
+    async function saveScore(score) {
       const user = auth.currentUser;
       if (!user) {
-        alert("لطفاً اول وارد شوید تا امتیاز ثبت شود!");
+        alert("باید اول وارد بشی!");
         return;
       }
-
-      const docRef = db.collection("scores").doc(user.uid);
-      docRef.get().then(doc => {
-        if (!doc.exists || finalScore > doc.data().score) {
-          docRef.set({
-            name: user.displayName,
-            score: finalScore,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).then(() => {
-            alert("امتیاز ثبت شد ✅");
-            updateLeaderboard();
-          });
-        } else {
-          alert("این امتیاز کمتر از رکورد قبلی شماست ⬇️");
-          updateLeaderboard();
-        }
-      });
-    }
-
-    // 🔹 Leaderboard
-    function updateLeaderboard() {
-      const lb = document.getElementById("leaderboard");
-      lb.innerHTML = "<li>Loading...</li>";
-
-      db.collection("scores")
-        .orderBy("score", "desc")
-        .limit(10)
-        .get()
-        .then(snapshot => {
-          lb.innerHTML = "";
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            const li = document.createElement("li");
-            li.textContent = `${data.name}: ${data.score}`;
-            lb.appendChild(li);
-          });
-        })
-        .catch(err => {
-          console.error(err);
-          lb.innerHTML = "<li>Error loading leaderboard</li>";
+      try {
+        await db.collection("leaderboard").doc(user.uid).set({
+          uid: user.uid,
+          score: score,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
+        console.log("امتیاز ذخیره شد:", score);
+      } catch (err) {
+        console.error("خطا در ذخیره امتیاز:", err);
+      }
     }
-
-    // 🔹 ریست چالش و تعیین زمان
-    const resetBtn = document.createElement("button");
-    resetBtn.textContent = "ریست چالش";
-    resetBtn.style.margin = "10px";
-    document.querySelector(".above-game").appendChild(resetBtn);
-
-    resetBtn.onclick = () => {
-      const durationMinutes = prompt("چند دقیقه چالش باشد؟", "30");
-      if (!durationMinutes) return;
-
-      const endTime = new Date();
-      endTime.setMinutes(endTime.getMinutes() + parseInt(durationMinutes));
-
-      db.collection("settings").doc("currentChallenge").set({
-        endTime: firebase.firestore.Timestamp.fromDate(endTime)
-      }).then(() => {
-        alert("چالش به مدت " + durationMinutes + " دقیقه فعال شد ✅");
-        challengeEndTime = endTime;
-
-        // پاک کردن Leaderboard
-        db.collection("scores").get().then(snapshot => {
-          snapshot.forEach(doc => doc.ref.delete());
-        }).then(() => {
-          updateLeaderboard();
-        });
-      });
-    };
-
-    // 🔹 بارگذاری اولیه و آپدیت Leaderboard
-    window.addEventListener("load", () => {
-      loadChallengeTime();
-      updateLeaderboard();
-
-      // آپدیت خودکار هر 30 ثانیه
-      setInterval(() => { updateLeaderboard(); }, 30000);
-    });
   </script>
+
+  <!-- فایل‌های اصلی بازی -->
+  <script src="js/bind_polyfill.js"></script>
+  <script src="js/classlist_polyfill.js"></script>
+  <script src="js/animframe_polyfill.js"></script>
+  <script src="js/keyboard_input_manager.js"></script>
+  <script src="js/html_actuator.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/tile.js"></script>
+  <script src="js/local_storage_manager.js"></script>
+  <script src="js/game_manager.js"></script>
+  <script src="js/application.js"></script>
 </body>
 </html>
