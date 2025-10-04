@@ -1,47 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2048 Challenge</title>
+  <title>2048 Challenge Arena</title>
   <link rel="stylesheet" href="style/main.css">
+  <style>
+    body { text-align:center; font-family:sans-serif; }
+    .hidden { display:none; }
+    #challengeTimer { font-weight:bold; color:#d33; margin-top:8px; }
+    input, button { padding:6px; margin:4px; }
+    #leaderboard { text-align:center; margin-top:20px; }
+    #leaderboard table { margin:auto; border-collapse:collapse; }
+    #leaderboard th, #leaderboard td { border:1px solid #ccc; padding:5px 10px; }
+    #leaderboard th { background:#eee; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>2048 Challenge Arena</h1>
-    <div id="auth-section">
-      <button id="googleLogin">ورود با گوگل</button>
-      <button id="guestLogin">ورود مهمان</button>
-      <button id="createChallenge">ساخت چلنج جدید</button>
-    </div>
+  <h1>🔥 2048 Challenge Arena</h1>
 
-    <div id="challenge-info" style="display:none;">
-      <h2 id="challengeTitle"></h2>
-      <p id="challengeTimer"></p>
-      <p><strong>امتیاز شما:</strong> <span id="userScore">0</span></p>
-      <div id="leaderboard"></div>
-    </div>
-
-    <!-- فرم ساخت چلنج -->
-    <div id="create-challenge-form" style="display:none; border:1px solid #ccc; padding:10px; margin:10px;">
-      <h3>ساخت چلنج جدید</h3>
-      <label>نام چلنج:</label>
-      <input type="text" id="challengeName"><br><br>
-      <label>زمان شروع (UTC):</label>
-      <input type="datetime-local" id="startTime"><br><br>
-      <label>زمان پایان (UTC):</label>
-      <input type="datetime-local" id="endTime"><br><br>
-      <button id="saveChallenge">بساز</button>
-      <p id="challengeLink" style="margin-top:10px;"></p>
-    </div>
+  <div id="auth-section">
+    <button id="googleLogin">ورود با گوگل</button>
+    <button id="guestLogin">ورود مهمان</button>
+    <button id="createChallenge">ساخت چلنج جدید</button>
   </div>
 
-  <hr>
+  <!-- فرم ورود مهمان -->
+  <div id="guest-name-form" class="hidden">
+    <h3>👤 نام خود را وارد کنید</h3>
+    <input type="text" id="guestNameInput" placeholder="مثلاً Ali2048">
+    <button id="confirmGuestName">ادامه</button>
+  </div>
 
-  <div id="game-container" style="display:none;">
-    <div class="game-message">
-      <p></p>
-    </div>
+  <!-- فرم ساخت چلنج -->
+  <div id="create-challenge-form" class="hidden">
+    <h3>🏁 ساخت چلنج جدید</h3>
+    <label>نام چلنج:</label><br>
+    <input type="text" id="challengeName"><br><br>
+    <label>زمان شروع (UTC):</label><br>
+    <input type="datetime-local" id="startTime"><br><br>
+    <label>زمان پایان (UTC):</label><br>
+    <input type="datetime-local" id="endTime"><br><br>
+    <button id="saveChallenge">بساز</button>
+    <p id="challengeLink"></p>
+  </div>
+
+  <!-- اطلاعات چلنج -->
+  <div id="challenge-info" class="hidden">
+    <h2 id="challengeTitle"></h2>
+    <p id="challengeTimer"></p>
+    <p><strong>امتیاز شما:</strong> <span id="userScore">0</span></p>
+    <div id="leaderboard"></div>
+  </div>
+
+  <!-- بازی -->
+  <div id="game-container" class="hidden">
     <div class="grid-container">
       <div class="grid-row">
         <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
@@ -61,10 +74,9 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, getDocs, getDoc, query, orderBy, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, updateProfile, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-    // 🔥 تنظیمات پروژه تو
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
       authDomain: "project-4706304311592930157.firebaseapp.com",
@@ -80,78 +92,124 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentChallenge = urlParams.get('challenge');
-
     const googleLogin = document.getElementById("googleLogin");
     const guestLogin = document.getElementById("guestLogin");
+    const confirmGuestName = document.getElementById("confirmGuestName");
     const createChallengeBtn = document.getElementById("createChallenge");
     const saveChallengeBtn = document.getElementById("saveChallenge");
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentChallenge = urlParams.get("challenge");
+
+    // ورود با گوگل
     googleLogin.onclick = async () => {
       try {
         await signInWithPopup(auth, provider);
-      } catch (e) {
-        alert("خطا در ورود گوگل: " + e.message);
-      }
+      } catch (e) { alert("خطا در ورود گوگل: " + e.message); }
     };
 
-    guestLogin.onclick = async () => {
+    // ورود مهمان
+    guestLogin.onclick = () => {
+      document.getElementById("auth-section").classList.add("hidden");
+      document.getElementById("guest-name-form").classList.remove("hidden");
+    };
+
+    confirmGuestName.onclick = async () => {
+      const name = document.getElementById("guestNameInput").value.trim();
+      if (!name) return alert("نام نمی‌تواند خالی باشد!");
       try {
-        await signInAnonymously(auth);
-      } catch (e) {
-        alert("خطا در ورود مهمان: " + e.message);
-      }
+        const result = await signInAnonymously(auth);
+        await updateProfile(result.user, { displayName: name });
+      } catch (e) { alert("خطا در ورود مهمان: " + e.message); }
     };
 
     createChallengeBtn.onclick = () => {
-      document.getElementById("create-challenge-form").style.display = "block";
+      document.getElementById("create-challenge-form").classList.remove("hidden");
     };
 
+    // ساخت چلنج جدید
     saveChallengeBtn.onclick = async () => {
       const name = document.getElementById("challengeName").value;
       const start = new Date(document.getElementById("startTime").value);
       const end = new Date(document.getElementById("endTime").value);
-
       if (!name || !start || !end) return alert("تمام فیلدها الزامی است!");
 
       const docRef = await addDoc(collection(db, "challenges"), {
-        name: name,
-        startTime: start.toISOString(),
-        endTime: end.toISOString(),
-        createdAt: serverTimestamp()
+        name, startTime: start.toISOString(), endTime: end.toISOString(), createdAt: serverTimestamp()
       });
 
       const link = `${window.location.origin}${window.location.pathname}?challenge=${docRef.id}`;
-      document.getElementById("challengeLink").innerHTML = `✅ لینک چلنج شما: <a href="${link}" target="_blank">${link}</a>`;
+      document.getElementById("challengeLink").innerHTML = `✅ لینک چلنج: <a href="${link}" target="_blank">${link}</a>`;
     };
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        if (currentChallenge) {
-          const docRef = doc(db, "challenges", currentChallenge);
-          const challengeSnap = await getDoc(docRef);
-          if (challengeSnap.exists()) {
-            const data = challengeSnap.data();
-            const now = new Date();
-            const start = new Date(data.startTime);
-            const end = new Date(data.endTime);
+    // به‌روزرسانی لیدربرد
+    const renderLeaderboard = (data) => {
+      const div = document.getElementById("leaderboard");
+      if (data.length === 0) { div.innerHTML = "<p>هنوز کسی بازی نکرده 😅</p>"; return; }
 
-            if (now >= start && now <= end) {
-              document.getElementById("challenge-info").style.display = "block";
-              document.getElementById("game-container").style.display = "block";
-              document.getElementById("challengeTitle").innerText = data.name;
-            } else {
-              alert("⏰ این چلنج هنوز شروع نشده یا تمام شده است!");
-            }
+      let html = "<h3>🏆 لیدربرد</h3><table><tr><th>نام</th><th>امتیاز</th></tr>";
+      data.sort((a,b)=>b.score - a.score).forEach(x=>{
+        html += `<tr><td>${x.name}</td><td>${x.score}</td></tr>`;
+      });
+      html += "</table>";
+      div.innerHTML = html;
+    };
+
+    // شنونده تغییر وضعیت ورود
+    onAuthStateChanged(auth, async (user) => {
+      if (user && currentChallenge) {
+        const challengeRef = doc(db, "challenges", currentChallenge);
+        const snap = await getDoc(challengeRef);
+        if (!snap.exists()) return alert("چلنج یافت نشد!");
+
+        const data = snap.data();
+        const start = new Date(data.startTime);
+        const end = new Date(data.endTime);
+
+        const titleEl = document.getElementById("challengeTitle");
+        const timerEl = document.getElementById("challengeTimer");
+        titleEl.textContent = `🏁 ${data.name}`;
+        document.getElementById("challenge-info").classList.remove("hidden");
+
+        const updateTimer = () => {
+          const now = new Date();
+          if (now < start) {
+            const diff = Math.floor((start - now) / 1000);
+            timerEl.textContent = `⏳ شروع در ${Math.floor(diff / 60)} دقیقه`;
+          } else if (now >= start && now <= end) {
+            const diff = Math.floor((end - now) / 1000);
+            timerEl.textContent = `🔥 در حال اجرا (${Math.floor(diff / 60)} دقیقه تا پایان)`;
+            document.getElementById("game-container").classList.remove("hidden");
           } else {
-            alert("چلنج پیدا نشد!");
+            timerEl.textContent = "⛔ زمان چلنج تمام شد!";
+            document.getElementById("game-container").classList.add("hidden");
           }
-        }
+        };
+        updateTimer();
+        setInterval(updateTimer, 30000);
+
+        // شنود تغییرات لیدربرد زنده
+        const lbRef = collection(db, "challenges", currentChallenge, "leaderboard");
+        onSnapshot(lbRef, (snapshot) => {
+          const list = [];
+          snapshot.forEach(doc => list.push(doc.data()));
+          renderLeaderboard(list);
+        });
+
+        // شبیه‌سازی آپدیت امتیاز (در واقع باید از game_manager.js بیاد)
+        window.updateScore = async (score) => {
+          document.getElementById("userScore").textContent = score;
+          await setDoc(doc(db, "challenges", currentChallenge, "leaderboard", user.uid), {
+            name: user.displayName || "مهمان",
+            score,
+            updatedAt: serverTimestamp()
+          });
+        };
       }
     });
   </script>
 
+  <!-- اسکریپت‌های بازی -->
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
