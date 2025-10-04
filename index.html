@@ -1,98 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>2048 Challenge</title>
-
-  <link href="style/main.css" rel="stylesheet" type="text/css" />
-  <link rel="shortcut icon" href="favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style/main.css">
 </head>
-
 <body>
   <div class="container">
-    <div class="heading">
-      <h1 class="title">2048 Challenge</h1>
-      <div class="scores-container">
-        <div class="score-container">0</div>
-        <div class="best-container">0</div>
-      </div>
+    <h1>2048 Challenge Arena</h1>
+    <div id="auth-section">
+      <button id="googleLogin">ورود با گوگل</button>
+      <button id="guestLogin">ورود مهمان</button>
+      <button id="createChallenge">ساخت چلنج جدید</button>
     </div>
 
-    <div class="above-game">
-      <p class="game-intro">
-        به چلنج 2048 خوش اومدی! اول وارد شو، بعد بازی کن و امتیازت ثبت میشه 🎯
-      </p>
-      <button onclick="loginWithGoogle()">ورود با گوگل</button>
-      <button onclick="loginAsGuest()">ورود مهمان</button>
-      <button onclick="logout()">خروج</button>
-      <a class="restart-button">New Game</a>
+    <div id="challenge-info" style="display:none;">
+      <h2 id="challengeTitle"></h2>
+      <p id="challengeTimer"></p>
+      <p><strong>امتیاز شما:</strong> <span id="userScore">0</span></p>
+      <div id="leaderboard"></div>
     </div>
 
-    <div class="game-container">
-      <div class="game-message">
-        <p></p>
-        <div class="lower">
-          <a class="keep-playing-button">Keep going</a>
-          <a class="retry-button">Try again</a>
-        </div>
-      </div>
-
-      <div class="grid-container">
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-      </div>
-
-      <div class="tile-container"></div>
+    <!-- فرم ساخت چلنج -->
+    <div id="create-challenge-form" style="display:none; border:1px solid #ccc; padding:10px; margin:10px;">
+      <h3>ساخت چلنج جدید</h3>
+      <label>نام چلنج:</label>
+      <input type="text" id="challengeName"><br><br>
+      <label>زمان شروع (UTC):</label>
+      <input type="datetime-local" id="startTime"><br><br>
+      <label>زمان پایان (UTC):</label>
+      <input type="datetime-local" id="endTime"><br><br>
+      <button id="saveChallenge">بساز</button>
+      <p id="challengeLink" style="margin-top:10px;"></p>
     </div>
-
-    <p class="game-explanation">
-      <strong>چطور بازی کنیم:</strong> با کلیدهای جهت‌دار حرکت کن تا عددها یکی بشن و به
-      <strong>2048</strong> برسی!
-    </p>
   </div>
 
-  <!-- فایل‌های اصلی بازی -->
-  <script src="js/bind_polyfill.js"></script>
-  <script src="js/classlist_polyfill.js"></script>
-  <script src="js/animframe_polyfill.js"></script>
-  <script src="js/keyboard_input_manager.js"></script>
-  <script src="js/html_actuator.js"></script>
-  <script src="js/grid.js"></script>
-  <script src="js/tile.js"></script>
-  <script src="js/local_storage_manager.js"></script>
-  <script src="js/game_manager.js"></script>
-  <script src="js/application.js"></script>
+  <hr>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <div id="game-container" style="display:none;">
+    <div class="game-message">
+      <p></p>
+    </div>
+    <div class="grid-container">
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+    </div>
+    <div class="tile-container"></div>
+  </div>
 
-  <script>
-    // پیکربندی پروژه‌ی تو
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDocs, getDoc, query, orderBy, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    // 🔥 تنظیمات پروژه تو
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
       authDomain: "project-4706304311592930157.firebaseapp.com",
@@ -103,63 +75,92 @@
       measurementId: "G-LVXWPLG38Q"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-    // ورود با گوگل
-    async function loginWithGoogle() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentChallenge = urlParams.get('challenge');
+
+    const googleLogin = document.getElementById("googleLogin");
+    const guestLogin = document.getElementById("guestLogin");
+    const createChallengeBtn = document.getElementById("createChallenge");
+    const saveChallengeBtn = document.getElementById("saveChallenge");
+
+    googleLogin.onclick = async () => {
       try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        alert("✅ وارد شدی به عنوان: " + result.user.displayName);
-      } catch (error) {
-        alert("❌ خطا در ورود با گوگل: " + error.message);
-        console.error(error);
+        await signInWithPopup(auth, provider);
+      } catch (e) {
+        alert("خطا در ورود گوگل: " + e.message);
       }
-    }
+    };
 
-    // ورود مهمان
-    async function loginAsGuest() {
+    guestLogin.onclick = async () => {
       try {
-        const result = await auth.signInAnonymously();
-        alert("✅ وارد شدی به عنوان مهمان");
-      } catch (error) {
-        alert("❌ خطا در ورود مهمان: " + error.message);
-        console.error(error);
+        await signInAnonymously(auth);
+      } catch (e) {
+        alert("خطا در ورود مهمان: " + e.message);
       }
-    }
+    };
 
-    // خروج
-    async function logout() {
-      try {
-        await auth.signOut();
-        alert("👋 از حساب خارج شدی");
-      } catch (error) {
-        alert("❌ خطا در خروج: " + error.message);
-        console.error(error);
-      }
-    }
+    createChallengeBtn.onclick = () => {
+      document.getElementById("create-challenge-form").style.display = "block";
+    };
 
-    // ثبت امتیاز (مثلاً هر ۳۰ ثانیه)
-    setInterval(async () => {
-      const user = auth.currentUser;
+    saveChallengeBtn.onclick = async () => {
+      const name = document.getElementById("challengeName").value;
+      const start = new Date(document.getElementById("startTime").value);
+      const end = new Date(document.getElementById("endTime").value);
+
+      if (!name || !start || !end) return alert("تمام فیلدها الزامی است!");
+
+      const docRef = await addDoc(collection(db, "challenges"), {
+        name: name,
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+        createdAt: serverTimestamp()
+      });
+
+      const link = `${window.location.origin}${window.location.pathname}?challenge=${docRef.id}`;
+      document.getElementById("challengeLink").innerHTML = `✅ لینک چلنج شما: <a href="${link}" target="_blank">${link}</a>`;
+    };
+
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const scoreEl = document.querySelector(".score-container");
-        const score = parseInt(scoreEl?.textContent || 0);
-        const name = user.displayName || "Guest";
-        try {
-          await db.collection("leaderboard").doc(user.uid).set({
-            name,
-            score,
-            time: firebase.firestore.FieldValue.serverTimestamp(),
-          });
-          console.log("✅ امتیاز ذخیره شد:", score);
-        } catch (e) {
-          console.error("خطا در ذخیره امتیاز:", e);
+        if (currentChallenge) {
+          const docRef = doc(db, "challenges", currentChallenge);
+          const challengeSnap = await getDoc(docRef);
+          if (challengeSnap.exists()) {
+            const data = challengeSnap.data();
+            const now = new Date();
+            const start = new Date(data.startTime);
+            const end = new Date(data.endTime);
+
+            if (now >= start && now <= end) {
+              document.getElementById("challenge-info").style.display = "block";
+              document.getElementById("game-container").style.display = "block";
+              document.getElementById("challengeTitle").innerText = data.name;
+            } else {
+              alert("⏰ این چلنج هنوز شروع نشده یا تمام شده است!");
+            }
+          } else {
+            alert("چلنج پیدا نشد!");
+          }
         }
       }
-    }, 30000);
+    });
   </script>
+
+  <script src="js/bind_polyfill.js"></script>
+  <script src="js/classlist_polyfill.js"></script>
+  <script src="js/animframe_polyfill.js"></script>
+  <script src="js/keyboard_input_manager.js"></script>
+  <script src="js/html_actuator.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/tile.js"></script>
+  <script src="js/local_storage_manager.js"></script>
+  <script src="js/game_manager.js"></script>
+  <script src="js/application.js"></script>
 </body>
 </html>
