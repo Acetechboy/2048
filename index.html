@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>2048 Challenge</title>
 
-  <link href="style/main.css" rel="stylesheet" type="text/css">
-  <link rel="shortcut icon" href="favicon.ico">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <link href="style/main.css" rel="stylesheet" type="text/css" />
+  <link rel="shortcut icon" href="favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 
 <body>
   <div class="container">
     <div class="heading">
-      <h1 class="title">2048</h1>
+      <h1 class="title">2048 Challenge</h1>
       <div class="scores-container">
         <div class="score-container">0</div>
         <div class="best-container">0</div>
@@ -20,15 +20,13 @@
     </div>
 
     <div class="above-game">
-      <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-      <a class="restart-button">New Game</a>
-    </div>
-
-    <!-- دکمه‌های ورود -->
-    <div style="margin: 10px 0;">
-      <button onclick="loginAsGuest()">ورود مهمان</button>
+      <p class="game-intro">
+        به چلنج 2048 خوش اومدی! اول وارد شو، بعد بازی کن و امتیازت ثبت میشه 🎯
+      </p>
       <button onclick="loginWithGoogle()">ورود با گوگل</button>
-      <button onclick="saveTestScore()">ذخیره امتیاز تستی</button>
+      <button onclick="loginAsGuest()">ورود مهمان</button>
+      <button onclick="logout()">خروج</button>
+      <a class="restart-button">New Game</a>
     </div>
 
     <div class="game-container">
@@ -41,85 +39,40 @@
       </div>
 
       <div class="grid-container">
-        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
-        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
-        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
-        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
       </div>
 
       <div class="tile-container"></div>
     </div>
 
     <p class="game-explanation">
-      <strong>How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+      <strong>چطور بازی کنیم:</strong> با کلیدهای جهت‌دار حرکت کن تا عددها یکی بشن و به
+      <strong>2048</strong> برسی!
     </p>
   </div>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
-
-<script>
-  // تنظیمات پروژه Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-    authDomain: "project-4706304311592930157.firebaseapp.com",
-    projectId: "project-4706304311592930157",
-    storageBucket: "project-4706304311592930157.firebasestorage.app",
-    messagingSenderId: "401832134319",
-    appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-    measurementId: "G-LVXWPLG38Q"
-  };
-
-  // مقداردهی اولیه
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  // ورود مهمان
-  async function loginAsGuest() {
-    try {
-      const userCred = await auth.signInAnonymously();
-      alert("وارد شدید به عنوان مهمان: " + userCred.user.uid);
-    } catch (err) {
-      console.error(err);
-      alert("خطا در ورود مهمان: " + err.message);
-    }
-  }
-
-  // ورود با گوگل
-  async function loginWithGoogle() {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(provider);
-      alert("وارد شدید با گوگل: " + result.user.displayName);
-    } catch (err) {
-      console.error(err);
-      alert("خطا در ورود گوگل: " + err.message);
-    }
-  }
-
-  // ذخیره امتیاز تستی
-  async function saveTestScore() {
-    const user = auth.currentUser;
-    if (!user) {
-      alert("باید اول وارد شوید");
-      return;
-    }
-    try {
-      await db.collection("leaderboard").doc(user.uid).set({
-        name: user.isAnonymous ? "مهمان" : user.displayName || "کاربر",
-        score: Math.floor(Math.random() * 1000),
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      alert("امتیاز تستی ذخیره شد!");
-    } catch (err) {
-      console.error(err);
-      alert("خطا در ذخیره امتیاز: " + err.message);
-    }
-  }
-</script>
 
   <!-- فایل‌های اصلی بازی -->
   <script src="js/bind_polyfill.js"></script>
@@ -132,5 +85,81 @@
   <script src="js/local_storage_manager.js"></script>
   <script src="js/game_manager.js"></script>
   <script src="js/application.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // پیکربندی پروژه‌ی تو
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+      authDomain: "project-4706304311592930157.firebaseapp.com",
+      projectId: "project-4706304311592930157",
+      storageBucket: "project-4706304311592930157.firebasestorage.app",
+      messagingSenderId: "401832134319",
+      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+      measurementId: "G-LVXWPLG38Q"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ورود با گوگل
+    async function loginWithGoogle() {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        alert("✅ وارد شدی به عنوان: " + result.user.displayName);
+      } catch (error) {
+        alert("❌ خطا در ورود با گوگل: " + error.message);
+        console.error(error);
+      }
+    }
+
+    // ورود مهمان
+    async function loginAsGuest() {
+      try {
+        const result = await auth.signInAnonymously();
+        alert("✅ وارد شدی به عنوان مهمان");
+      } catch (error) {
+        alert("❌ خطا در ورود مهمان: " + error.message);
+        console.error(error);
+      }
+    }
+
+    // خروج
+    async function logout() {
+      try {
+        await auth.signOut();
+        alert("👋 از حساب خارج شدی");
+      } catch (error) {
+        alert("❌ خطا در خروج: " + error.message);
+        console.error(error);
+      }
+    }
+
+    // ثبت امتیاز (مثلاً هر ۳۰ ثانیه)
+    setInterval(async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const scoreEl = document.querySelector(".score-container");
+        const score = parseInt(scoreEl?.textContent || 0);
+        const name = user.displayName || "Guest";
+        try {
+          await db.collection("leaderboard").doc(user.uid).set({
+            name,
+            score,
+            time: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          console.log("✅ امتیاز ذخیره شد:", score);
+        } catch (e) {
+          console.error("خطا در ذخیره امتیاز:", e);
+        }
+      }
+    }, 30000);
+  </script>
 </body>
 </html>
