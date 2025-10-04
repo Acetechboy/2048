@@ -6,7 +6,7 @@
   <title>2048 Challenge Arena</title>
   <link rel="stylesheet" href="style/main.css">
   <style>
-    body { text-align:center; font-family:sans-serif; }
+    body { text-align:center; font-family:sans-serif; direction:rtl; }
     .hidden { display:none; }
     #challengeTimer { font-weight:bold; color:#d33; margin-top:8px; }
     input, button { padding:6px; margin:4px; }
@@ -18,6 +18,8 @@
 </head>
 <body>
   <h1>🔥 2048 Challenge Arena</h1>
+
+  <div id="user-info" class="hidden"></div>
 
   <div id="auth-section">
     <button id="googleLogin">ورود با گوگل</button>
@@ -75,7 +77,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, updateProfile, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
@@ -97,6 +99,7 @@
     const confirmGuestName = document.getElementById("confirmGuestName");
     const createChallengeBtn = document.getElementById("createChallenge");
     const saveChallengeBtn = document.getElementById("saveChallenge");
+    const userInfo = document.getElementById("user-info");
 
     const urlParams = new URLSearchParams(window.location.search);
     const currentChallenge = urlParams.get("challenge");
@@ -142,11 +145,10 @@
       document.getElementById("challengeLink").innerHTML = `✅ لینک چلنج: <a href="${link}" target="_blank">${link}</a>`;
     };
 
-    // به‌روزرسانی لیدربرد
+    // لیدربرد
     const renderLeaderboard = (data) => {
       const div = document.getElementById("leaderboard");
       if (data.length === 0) { div.innerHTML = "<p>هنوز کسی بازی نکرده 😅</p>"; return; }
-
       let html = "<h3>🏆 لیدربرد</h3><table><tr><th>نام</th><th>امتیاز</th></tr>";
       data.sort((a,b)=>b.score - a.score).forEach(x=>{
         html += `<tr><td>${x.name}</td><td>${x.score}</td></tr>`;
@@ -155,56 +157,59 @@
       div.innerHTML = html;
     };
 
-    // شنونده تغییر وضعیت ورود
+    // ورود کاربر
     onAuthStateChanged(auth, async (user) => {
-      if (user && currentChallenge) {
-        const challengeRef = doc(db, "challenges", currentChallenge);
-        const snap = await getDoc(challengeRef);
-        if (!snap.exists()) return alert("چلنج یافت نشد!");
+      if (user) {
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("guest-name-form").classList.add("hidden");
+        userInfo.classList.remove("hidden");
+        userInfo.textContent = `👤 ${user.displayName || "مهمان"}`;
 
-        const data = snap.data();
-        const start = new Date(data.startTime);
-        const end = new Date(data.endTime);
+        if (currentChallenge) {
+          const challengeRef = doc(db, "challenges", currentChallenge);
+          const snap = await getDoc(challengeRef);
+          if (!snap.exists()) return alert("چلنج یافت نشد!");
 
-        const titleEl = document.getElementById("challengeTitle");
-        const timerEl = document.getElementById("challengeTimer");
-        titleEl.textContent = `🏁 ${data.name}`;
-        document.getElementById("challenge-info").classList.remove("hidden");
+          const data = snap.data();
+          const start = new Date(data.startTime);
+          const end = new Date(data.endTime);
+          const titleEl = document.getElementById("challengeTitle");
+          const timerEl = document.getElementById("challengeTimer");
+          titleEl.textContent = `🏁 ${data.name}`;
+          document.getElementById("challenge-info").classList.remove("hidden");
 
-        const updateTimer = () => {
-          const now = new Date();
-          if (now < start) {
-            const diff = Math.floor((start - now) / 1000);
-            timerEl.textContent = `⏳ شروع در ${Math.floor(diff / 60)} دقیقه`;
-          } else if (now >= start && now <= end) {
-            const diff = Math.floor((end - now) / 1000);
-            timerEl.textContent = `🔥 در حال اجرا (${Math.floor(diff / 60)} دقیقه تا پایان)`;
-            document.getElementById("game-container").classList.remove("hidden");
-          } else {
-            timerEl.textContent = "⛔ زمان چلنج تمام شد!";
-            document.getElementById("game-container").classList.add("hidden");
-          }
-        };
-        updateTimer();
-        setInterval(updateTimer, 30000);
+          const updateTimer = () => {
+            const now = new Date();
+            if (now < start) {
+              timerEl.textContent = `⏳ شروع در ${(start - now)/60000|0} دقیقه`;
+            } else if (now >= start && now <= end) {
+              timerEl.textContent = `🔥 در حال اجرا`;
+              document.getElementById("game-container").classList.remove("hidden");
+            } else {
+              timerEl.textContent = "⛔ زمان چلنج تمام شد!";
+              document.getElementById("game-container").classList.add("hidden");
+            }
+          };
+          updateTimer();
+          setInterval(updateTimer, 30000);
 
-        // شنود تغییرات لیدربرد زنده
-        const lbRef = collection(db, "challenges", currentChallenge, "leaderboard");
-        onSnapshot(lbRef, (snapshot) => {
-          const list = [];
-          snapshot.forEach(doc => list.push(doc.data()));
-          renderLeaderboard(list);
-        });
-
-        // شبیه‌سازی آپدیت امتیاز (در واقع باید از game_manager.js بیاد)
-        window.updateScore = async (score) => {
-          document.getElementById("userScore").textContent = score;
-          await setDoc(doc(db, "challenges", currentChallenge, "leaderboard", user.uid), {
-            name: user.displayName || "مهمان",
-            score,
-            updatedAt: serverTimestamp()
+          const lbRef = collection(db, "challenges", currentChallenge, "leaderboard");
+          onSnapshot(lbRef, (snapshot) => {
+            const list = [];
+            snapshot.forEach(doc => list.push(doc.data()));
+            renderLeaderboard(list);
           });
-        };
+
+          // اتصال امتیاز از بازی
+          window.updateScore = async (score) => {
+            document.getElementById("userScore").textContent = score;
+            await setDoc(doc(db, "challenges", currentChallenge, "leaderboard", user.uid), {
+              name: user.displayName || "مهمان",
+              score,
+              updatedAt: serverTimestamp()
+            });
+          };
+        }
       }
     });
   </script>
