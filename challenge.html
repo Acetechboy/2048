@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <title>چلنج 2048</title>
+  <link href="style/main.css" rel="stylesheet" />
+  <style>
+    body {
+      direction: rtl;
+      background: #faf8ef;
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    #leaderboard {
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+      max-width: 400px;
+      margin-inline: auto;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: 6px;
+    }
+    th {
+      background: #8f7a66;
+      color: white;
+    }
+    #status {
+      margin: 10px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🏆 چلنج 2048</h2>
+  <div id="status">در حال بارگذاری...</div>
+
+  <!-- بازی -->
+  <iframe id="gameFrame" src="game.html" width="350" height="420" frameborder="0" style="display:none;"></iframe>
+
+  <!-- لیدربرد -->
+  <div id="leaderboard" style="display:none;">
+    <h3>🏅 لیدربرد</h3>
+    <table>
+      <thead>
+        <tr><th>بازیکن</th><th>امتیاز</th></tr>
+      </thead>
+      <tbody id="board"></tbody>
+    </table>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+      authDomain: "project-4706304311592930157.firebaseapp.com",
+      projectId: "project-4706304311592930157",
+      storageBucket: "project-4706304311592930157.firebasestorage.app",
+      messagingSenderId: "401832134319",
+      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+      measurementId: "G-LVXWPLG38Q"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // گرفتن ID چلنج از لینک
+    const params = new URLSearchParams(window.location.search);
+    const challengeId = params.get('id');
+    const statusEl = document.getElementById('status');
+    const gameFrame = document.getElementById('gameFrame');
+    const leaderboard = document.getElementById('leaderboard');
+    const board = document.getElementById('board');
+
+    async function init() {
+      if (!challengeId) {
+        statusEl.textContent = "❌ شناسه چلنج یافت نشد.";
+        return;
+      }
+
+      const doc = await db.collection("challenges").doc(challengeId).get();
+      if (!doc.exists) {
+        statusEl.textContent = "❌ چلنج یافت نشد.";
+        return;
+      }
+
+      const data = doc.data();
+      const start = new Date(data.startTime);
+      const end = new Date(data.endTime);
+      const now = new Date();
+
+      if (now < start) {
+        const diff = Math.round((start - now) / 60000);
+        statusEl.textContent = `⏳ چلنج هنوز شروع نشده (شروع در ${start.toLocaleString()})`;
+      } else if (now > end) {
+        statusEl.textContent = "⌛ زمان چلنج تمام شده.";
+        showLeaderboard();
+      } else {
+        statusEl.textContent = "🔥 چلنج فعال است! بازی را شروع کنید.";
+        gameFrame.style.display = "block";
+        leaderboard.style.display = "block";
+        showLeaderboard();
+      }
+    }
+
+    async function showLeaderboard() {
+      const snapshot = await db.collection("challenges")
+        .doc(challengeId)
+        .collection("leaderboard")
+        .orderBy("score", "desc")
+        .get();
+
+      board.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const row = `<tr><td>${d.name}</td><td>${d.score}</td></tr>`;
+        board.innerHTML += row;
+      });
+    }
+
+    // گوش دادن بلادرنگ به تغییرات
+    db.collection("challenges").doc(challengeId)
+      .collection("leaderboard")
+      .orderBy("score", "desc")
+      .onSnapshot(snapshot => {
+        board.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const row = `<tr><td>${d.name}</td><td>${d.score}</td></tr>`;
+          board.innerHTML += row;
+        });
+      });
+
+    init();
+  </script>
+</body>
+</html>
