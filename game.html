@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048 Challenge Game</title>
+  <link href="style/main.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <div class="container">
+    <div class="heading">
+      <h1 class="title">2048</h1>
+      <div class="scores-container">
+        <div class="score-container">0</div>
+        <div class="best-container">0</div>
+      </div>
+    </div>
+
+    <div class="game-container">
+      <div class="grid-container">
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+      </div>
+
+      <div class="tile-container"></div>
+    </div>
+
+    <div class="lower-container">
+      <p class="game-explanation">
+        <strong>Use your arrow keys</strong> to move the tiles. When two tiles with the same number touch, they merge into one!
+      </p>
+    </div>
+  </div>
+
+  <!-- Scripts for game logic -->
+  <script src="js/bind_polyfill.js"></script>
+  <script src="js/classlist_polyfill.js"></script>
+  <script src="js/animframe_polyfill.js"></script>
+  <script src="js/keyboard_input_manager.js"></script>
+  <script src="js/html_actuator.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/tile.js"></script>
+  <script src="js/local_storage_manager.js"></script>
+  <script src="js/game_manager.js"></script>
+  <script src="js/application.js"></script>
+
+  <!-- Send score to parent window -->
+  <script>
+    let lastScore = 0;
+    const scoreObserver = new MutationObserver(() => {
+      const scoreEl = document.querySelector('.score-container');
+      const score = parseInt(scoreEl.textContent) || 0;
+      if (score !== lastScore) {
+        lastScore = score;
+        // Send score update to parent window
+        window.parent.postMessage({ type: 'scoreUpdate', score: score }, '*');
+      }
+    });
+
+    // Observe score changes
+    const scoreContainer = document.querySelector('.score-container');
+    if (scoreContainer) {
+      scoreObserver.observe(scoreContainer, { childList: true });
+    }
+
+    // When game over → send final score
+    document.addEventListener('gameover', () => {
+      window.parent.postMessage({ type: 'gameOver', score: lastScore }, '*');
+    });
+  </script>
+</body>
+</html>
