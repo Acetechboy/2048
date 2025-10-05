@@ -23,20 +23,20 @@
     <h1>🔥 چلنج 2048</h1>
 
     <div id="auth-section">
-      <button onclick="loginWithGoogle()">ورود با گوگل</button>
+      <button id="googleLogin">ورود با گوگل</button>
       <br>
       <input type="text" id="guestName" placeholder="نام خود را وارد کنید">
-      <button onclick="loginAsGuest()">ورود مهمان</button>
+      <button id="guestLogin">ورود مهمان</button>
     </div>
 
     <div id="user-section" style="display:none;">
       <p>👋 سلام، <span id="player-name"></span>!</p>
-      <button onclick="createChallenge()">ساخت چلنج جدید</button>
+      <button id="createBtn">ساخت چلنج جدید</button>
       <div id="create-challenge" style="display:none;">
         <input type="text" id="challengeName" placeholder="نام چلنج">
         <input type="datetime-local" id="startTime">
         <input type="datetime-local" id="endTime">
-        <button onclick="saveChallenge()">ایجاد</button>
+        <button id="saveChallenge">ایجاد</button>
       </div>
 
       <div id="timer"></div>
@@ -52,106 +52,94 @@
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // 🔥 تنظیمات Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-      authDomain: "project-4706304311592930157.firebaseapp.com",
-      projectId: "project-4706304311592930157",
-      storageBucket: "project-4706304311592930157.firebasestorage.app",
-      messagingSenderId: "401832134319",
-      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-      measurementId: "G-LVXWPLG38Q"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    window.addEventListener("load", () => {
+      // ✅ پیکربندی فایربیس
+      const firebaseConfig = {
+        apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+        authDomain: "project-4706304311592930157.firebaseapp.com",
+        projectId: "project-4706304311592930157",
+        storageBucket: "project-4706304311592930157.firebasestorage.app",
+        messagingSenderId: "401832134319",
+        appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+        measurementId: "G-LVXWPLG38Q"
+      };
 
-    let currentUser = null;
-    let activeChallenge = null;
-    let timerInterval = null;
+      // ✅ مقداردهی اولیه
+      const app = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
 
-    // --- ورود با گوگل ---
-    async function loginWithGoogle() {
-      try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        currentUser = result.user;
-        showUserUI(currentUser.displayName);
-      } catch (e) {
-        alert("❌ خطا در ورود با گوگل");
-      }
-    }
+      let currentUser = null;
+      let timerInterval = null;
 
-    // --- ورود مهمان ---
-    function loginAsGuest() {
-      const name = document.getElementById('guestName').value.trim();
-      if (!name) return alert("نام را وارد کنید");
-      currentUser = { uid: "guest_" + Date.now(), displayName: name };
-      showUserUI(name);
-    }
+      const authSection = document.getElementById("auth-section");
+      const userSection = document.getElementById("user-section");
+      const playerNameEl = document.getElementById("player-name");
 
-    function showUserUI(name) {
-      document.getElementById("auth-section").style.display = "none";
-      document.getElementById("user-section").style.display = "block";
-      document.getElementById("player-name").innerText = name;
-      loadLeaderboard();
-    }
-
-    // --- ساخت چلنج جدید ---
-    function createChallenge() {
-      document.getElementById('create-challenge').style.display = 'block';
-    }
-
-    async function saveChallenge() {
-      const name = document.getElementById('challengeName').value.trim();
-      const start = new Date(document.getElementById('startTime').value);
-      const end = new Date(document.getElementById('endTime').value);
-      if (!name || !start || !end) return alert("تمام فیلدها را پر کنید");
-
-      const ref = await db.collection("challenges").add({
-        name,
-        startTime: start,
-        endTime: end,
-        creator: currentUser.displayName
-      });
-      const link = `${window.location.origin}${window.location.pathname}?challenge=${ref.id}`;
-      alert("✅ چلنج ساخته شد!\nلینک: " + link);
-    }
-
-    // --- لود لیدربرد ---
-    function loadLeaderboard() {
-      db.collection("leaderboard")
-        .orderBy("score", "desc")
-        .limit(10)
-        .onSnapshot(snapshot => {
-          const board = document.getElementById("leaderboard");
-          board.innerHTML = "";
-          snapshot.forEach(doc => {
-            const d = doc.data();
-            board.innerHTML += `<div class="leader-item"><span>${d.name}</span><span>${d.score}</span></div>`;
-          });
-        });
-    }
-
-    // --- تایمر چلنج ---
-    function startChallengeTimer(start, end) {
-      clearInterval(timerInterval);
-      function updateTimer() {
-        const now = new Date();
-        if (now < start) {
-          document.getElementById("timer").innerText = "⏳ منتظر شروع چلنج...";
-        } else if (now >= start && now <= end) {
-          const remaining = Math.floor((end - now) / 1000);
-          document.getElementById("timer").innerText = `⌛ زمان باقی‌مانده: ${remaining}s`;
-        } else {
-          document.getElementById("timer").innerText = "🏁 زمان چلنج به پایان رسید";
-          document.getElementById("game-frame").style.pointerEvents = "none";
-          clearInterval(timerInterval);
+      // --- ورود با گوگل ---
+      document.getElementById("googleLogin").onclick = async () => {
+        try {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          const result = await auth.signInWithPopup(provider);
+          currentUser = result.user;
+          showUserUI(currentUser.displayName);
+        } catch (e) {
+          console.error(e);
+          alert("❌ خطا در ورود با گوگل");
         }
+      };
+
+      // --- ورود مهمان ---
+      document.getElementById("guestLogin").onclick = () => {
+        const name = document.getElementById("guestName").value.trim();
+        if (!name) return alert("نام را وارد کنید");
+        currentUser = { uid: "guest_" + Date.now(), displayName: name };
+        showUserUI(name);
+      };
+
+      function showUserUI(name) {
+        authSection.style.display = "none";
+        userSection.style.display = "block";
+        playerNameEl.textContent = name;
+        loadLeaderboard();
       }
-      updateTimer();
-      timerInterval = setInterval(updateTimer, 1000);
-    }
+
+      // --- ساخت چلنج ---
+      document.getElementById("createBtn").onclick = () => {
+        document.getElementById("create-challenge").style.display = "block";
+      };
+
+      document.getElementById("saveChallenge").onclick = async () => {
+        const name = document.getElementById("challengeName").value.trim();
+        const start = new Date(document.getElementById("startTime").value);
+        const end = new Date(document.getElementById("endTime").value);
+        if (!name || !start || !end) return alert("تمام فیلدها را پر کنید");
+
+        const ref = await db.collection("challenges").add({
+          name,
+          startTime: start,
+          endTime: end,
+          creator: currentUser.displayName
+        });
+        const link = `${window.location.origin}${window.location.pathname}?challenge=${ref.id}`;
+        alert("✅ چلنج ساخته شد!\n📎 لینک: " + link);
+      };
+
+      // --- لیدربرد ---
+      function loadLeaderboard() {
+        db.collection("leaderboard")
+          .orderBy("score", "desc")
+          .limit(10)
+          .onSnapshot(snapshot => {
+            const board = document.getElementById("leaderboard");
+            board.innerHTML = "";
+            snapshot.forEach(doc => {
+              const d = doc.data();
+              board.innerHTML += `<div class="leader-item"><span>${d.name}</span><span>${d.score}</span></div>`;
+            });
+          });
+      }
+    });
   </script>
 
 </body>
