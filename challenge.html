@@ -1,70 +1,58 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>چلنج 2048</title>
-  <link href="style/main.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style/main.css">
   <style>
-    body {
-      direction: rtl;
-      background: #faf8ef;
-      font-family: sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-    #leaderboard {
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px;
-      max-width: 400px;
-      margin-inline: auto;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      border-bottom: 1px solid #ddd;
-      padding: 6px;
-    }
-    th {
-      background: #8f7a66;
-      color: white;
-    }
-    #status {
-      margin: 10px 0;
-      font-weight: bold;
-    }
+    body { text-align: center; background: #faf8ef; font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif; }
+    .container { max-width: 500px; margin: 20px auto; padding: 20px; background: #f5f5dc; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    button { background: #8f7a66; color: white; border: none; padding: 10px 20px; border-radius: 10px; margin: 5px; cursor: pointer; }
+    button:hover { background: #a58b71; }
+    input { padding: 8px; border: 1px solid #ccc; border-radius: 8px; width: 80%; margin: 5px 0; }
+    #game-frame { width: 100%; height: 500px; border: none; margin-top: 15px; border-radius: 10px; }
+    #timer { font-size: 18px; font-weight: bold; color: #776e65; margin-top: 10px; }
+    #leaderboard { margin-top: 15px; text-align: left; background: white; border-radius: 10px; padding: 10px; }
+    .leader-item { display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #eee; }
   </style>
 </head>
 <body>
 
-  <h2>🏆 چلنج 2048</h2>
-  <div id="status">در حال بارگذاری...</div>
+  <div class="container">
+    <h1>🔥 چلنج 2048</h1>
 
-  <!-- بازی -->
-  <iframe id="gameFrame" src="game.html" width="350" height="420" frameborder="0" style="display:none;"></iframe>
+    <div id="auth-section">
+      <button onclick="loginWithGoogle()">ورود با گوگل</button>
+      <br>
+      <input type="text" id="guestName" placeholder="نام خود را وارد کنید">
+      <button onclick="loginAsGuest()">ورود مهمان</button>
+    </div>
 
-  <!-- لیدربرد -->
-  <div id="leaderboard" style="display:none;">
-    <h3>🏅 لیدربرد</h3>
-    <table>
-      <thead>
-        <tr><th>بازیکن</th><th>امتیاز</th></tr>
-      </thead>
-      <tbody id="board"></tbody>
-    </table>
+    <div id="user-section" style="display:none;">
+      <p>👋 سلام، <span id="player-name"></span>!</p>
+      <button onclick="createChallenge()">ساخت چلنج جدید</button>
+      <div id="create-challenge" style="display:none;">
+        <input type="text" id="challengeName" placeholder="نام چلنج">
+        <input type="datetime-local" id="startTime">
+        <input type="datetime-local" id="endTime">
+        <button onclick="saveChallenge()">ایجاد</button>
+      </div>
+
+      <div id="timer"></div>
+      <iframe id="game-frame" src="game.html"></iframe>
+      <h3>🏆 لیدربرد</h3>
+      <div id="leaderboard"></div>
+    </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
 
   <script>
+    // 🔥 تنظیمات Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
       authDomain: "project-4706304311592930157.firebaseapp.com",
@@ -75,76 +63,96 @@
       measurementId: "G-LVXWPLG38Q"
     };
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // گرفتن ID چلنج از لینک
-    const params = new URLSearchParams(window.location.search);
-    const challengeId = params.get('id');
-    const statusEl = document.getElementById('status');
-    const gameFrame = document.getElementById('gameFrame');
-    const leaderboard = document.getElementById('leaderboard');
-    const board = document.getElementById('board');
+    let currentUser = null;
+    let activeChallenge = null;
+    let timerInterval = null;
 
-    async function init() {
-      if (!challengeId) {
-        statusEl.textContent = "❌ شناسه چلنج یافت نشد.";
-        return;
-      }
-
-      const doc = await db.collection("challenges").doc(challengeId).get();
-      if (!doc.exists) {
-        statusEl.textContent = "❌ چلنج یافت نشد.";
-        return;
-      }
-
-      const data = doc.data();
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
-      const now = new Date();
-
-      if (now < start) {
-        const diff = Math.round((start - now) / 60000);
-        statusEl.textContent = `⏳ چلنج هنوز شروع نشده (شروع در ${start.toLocaleString()})`;
-      } else if (now > end) {
-        statusEl.textContent = "⌛ زمان چلنج تمام شده.";
-        showLeaderboard();
-      } else {
-        statusEl.textContent = "🔥 چلنج فعال است! بازی را شروع کنید.";
-        gameFrame.style.display = "block";
-        leaderboard.style.display = "block";
-        showLeaderboard();
+    // --- ورود با گوگل ---
+    async function loginWithGoogle() {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        currentUser = result.user;
+        showUserUI(currentUser.displayName);
+      } catch (e) {
+        alert("❌ خطا در ورود با گوگل");
       }
     }
 
-    async function showLeaderboard() {
-      const snapshot = await db.collection("challenges")
-        .doc(challengeId)
-        .collection("leaderboard")
+    // --- ورود مهمان ---
+    function loginAsGuest() {
+      const name = document.getElementById('guestName').value.trim();
+      if (!name) return alert("نام را وارد کنید");
+      currentUser = { uid: "guest_" + Date.now(), displayName: name };
+      showUserUI(name);
+    }
+
+    function showUserUI(name) {
+      document.getElementById("auth-section").style.display = "none";
+      document.getElementById("user-section").style.display = "block";
+      document.getElementById("player-name").innerText = name;
+      loadLeaderboard();
+    }
+
+    // --- ساخت چلنج جدید ---
+    function createChallenge() {
+      document.getElementById('create-challenge').style.display = 'block';
+    }
+
+    async function saveChallenge() {
+      const name = document.getElementById('challengeName').value.trim();
+      const start = new Date(document.getElementById('startTime').value);
+      const end = new Date(document.getElementById('endTime').value);
+      if (!name || !start || !end) return alert("تمام فیلدها را پر کنید");
+
+      const ref = await db.collection("challenges").add({
+        name,
+        startTime: start,
+        endTime: end,
+        creator: currentUser.displayName
+      });
+      const link = `${window.location.origin}${window.location.pathname}?challenge=${ref.id}`;
+      alert("✅ چلنج ساخته شد!\nلینک: " + link);
+    }
+
+    // --- لود لیدربرد ---
+    function loadLeaderboard() {
+      db.collection("leaderboard")
         .orderBy("score", "desc")
-        .get();
-
-      board.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const row = `<tr><td>${d.name}</td><td>${d.score}</td></tr>`;
-        board.innerHTML += row;
-      });
+        .limit(10)
+        .onSnapshot(snapshot => {
+          const board = document.getElementById("leaderboard");
+          board.innerHTML = "";
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            board.innerHTML += `<div class="leader-item"><span>${d.name}</span><span>${d.score}</span></div>`;
+          });
+        });
     }
 
-    // گوش دادن بلادرنگ به تغییرات
-    db.collection("challenges").doc(challengeId)
-      .collection("leaderboard")
-      .orderBy("score", "desc")
-      .onSnapshot(snapshot => {
-        board.innerHTML = "";
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          const row = `<tr><td>${d.name}</td><td>${d.score}</td></tr>`;
-          board.innerHTML += row;
-        });
-      });
-
-    init();
+    // --- تایمر چلنج ---
+    function startChallengeTimer(start, end) {
+      clearInterval(timerInterval);
+      function updateTimer() {
+        const now = new Date();
+        if (now < start) {
+          document.getElementById("timer").innerText = "⏳ منتظر شروع چلنج...";
+        } else if (now >= start && now <= end) {
+          const remaining = Math.floor((end - now) / 1000);
+          document.getElementById("timer").innerText = `⌛ زمان باقی‌مانده: ${remaining}s`;
+        } else {
+          document.getElementById("timer").innerText = "🏁 زمان چلنج به پایان رسید";
+          document.getElementById("game-frame").style.pointerEvents = "none";
+          clearInterval(timerInterval);
+        }
+      }
+      updateTimer();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
   </script>
+
 </body>
 </html>
