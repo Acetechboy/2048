@@ -1,159 +1,97 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ساخت چلنج 2048</title>
-  <link href="style/main.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بازی 2048 آنلاین</title>
+  <link rel="stylesheet" href="style/main.css">
   <style>
     body {
-      direction: rtl;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
       background: #faf8ef;
-    }
-    .container {
-      background: #ffffff;
-      padding: 20px 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px #ccc;
-      width: 320px;
       text-align: center;
+      font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
     }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
+    .menu {
+      margin-top: 50px;
+    }
+    h1 {
+      font-size: 48px;
+      color: #776e65;
     }
     button {
-      cursor: pointer;
       background: #8f7a66;
       color: white;
-      transition: 0.3s;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      margin: 8px;
+      font-size: 18px;
+      cursor: pointer;
     }
     button:hover {
-      background: #b39b88;
+      background: #a58b71;
     }
-    #link-container {
-      margin-top: 10px;
-      word-wrap: break-word;
-      color: #333;
+    #guestName {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 200px;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>🔥 ساخت چلنج 2048</h2>
-
-  <div id="auth-section">
-    <button id="googleLogin">ورود با گوگل</button>
-    <input id="guestName" placeholder="نام خود را وارد کنید" />
-    <button id="guestLogin">ورود مهمان</button>
+  <div class="menu">
+    <h1>🎮 بازی 2048 آنلاین</h1>
+    <div id="auth-section">
+      <button id="googleLogin">ورود با گوگل</button><br>
+      <input type="text" id="guestName" placeholder="نام خود را وارد کنید">
+      <button id="guestLogin">ورود مهمان</button>
+    </div>
   </div>
 
-  <div id="user-section" style="display:none;">
-    <p>👤 خوش آمدی، <span id="userName"></span></p>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
 
-    <h3>ساخت چلنج جدید</h3>
-    <input id="challengeName" placeholder="نام چلنج" />
-    <label>⏰ تاریخ و ساعت شروع:</label>
-    <input type="datetime-local" id="startTime">
-    <label>⏰ تاریخ و ساعت پایان:</label>
-    <input type="datetime-local" id="endTime">
-    <button id="createChallenge">ساخت چلنج</button>
+  <script>
+    window.addEventListener("load", () => {
+      // --- تنظیمات فایربیس ---
+      const firebaseConfig = {
+        apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+        authDomain: "project-4706304311592930157.firebaseapp.com",
+        projectId: "project-4706304311592930157",
+        storageBucket: "project-4706304311592930157.firebasestorage.app",
+        messagingSenderId: "401832134319",
+        appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+        measurementId: "G-LVXWPLG38Q"
+      };
 
-    <div id="link-container"></div>
-  </div>
-</div>
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+      // --- ورود با گوگل ---
+      document.getElementById("googleLogin").onclick = async () => {
+        try {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          const result = await auth.signInWithPopup(provider);
+          const user = result.user;
+          localStorage.setItem("playerName", user.displayName);
+          window.location.href = "challenge.html";
+        } catch (error) {
+          console.error(error);
+          alert("❌ خطا در ورود با گوگل");
+        }
+      };
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-    authDomain: "project-4706304311592930157.firebaseapp.com",
-    projectId: "project-4706304311592930157",
-    storageBucket: "project-4706304311592930157.firebasestorage.app",
-    messagingSenderId: "401832134319",
-    appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-    measurementId: "G-LVXWPLG38Q"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  const googleLogin = document.getElementById('googleLogin');
-  const guestLogin = document.getElementById('guestLogin');
-  const guestNameInput = document.getElementById('guestName');
-  const userSection = document.getElementById('user-section');
-  const authSection = document.getElementById('auth-section');
-  const userNameEl = document.getElementById('userName');
-
-  let currentUser = null;
-
-  // ورود با گوگل
-  googleLogin.onclick = async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      const result = await auth.signInWithPopup(provider);
-      currentUser = result.user;
-      showUser(result.user.displayName);
-    } catch (e) {
-      alert("خطا در ورود با گوگل");
-    }
-  };
-
-  // ورود مهمان
-  guestLogin.onclick = async () => {
-    const name = guestNameInput.value.trim();
-    if (!name) return alert("لطفا نام خود را وارد کنید");
-    try {
-      const result = await auth.signInAnonymously();
-      currentUser = result.user;
-      await db.collection("guests").doc(currentUser.uid).set({ name });
-      showUser(name);
-    } catch (e) {
-      alert("خطا در ورود مهمان");
-    }
-  };
-
-  function showUser(name) {
-    authSection.style.display = "none";
-    userSection.style.display = "block";
-    userNameEl.textContent = name;
-  }
-
-  // ساخت چلنج
-  document.getElementById('createChallenge').onclick = async () => {
-    const challengeName = document.getElementById('challengeName').value.trim();
-    const start = document.getElementById('startTime').value;
-    const end = document.getElementById('endTime').value;
-    if (!challengeName || !start || !end) return alert("تمام فیلدها را پر کنید");
-
-    const docRef = await db.collection("challenges").add({
-      name: challengeName,
-      startTime: new Date(start).toISOString(),
-      endTime: new Date(end).toISOString(),
-      createdBy: currentUser.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      // --- ورود مهمان ---
+      document.getElementById("guestLogin").onclick = () => {
+        const name = document.getElementById("guestName").value.trim();
+        if (!name) return alert("نام را وارد کنید");
+        localStorage.setItem("playerName", name);
+        window.location.href = "challenge.html";
+      };
     });
-
-    const challengeId = docRef.id;
-    const link = `${window.location.origin}/2048/challenge.html?id=${challengeId}`;
-    document.getElementById('link-container').innerHTML =
-      `<p>✅ لینک چلنج شما:</p><a href="${link}" target="_blank">${link}</a>`;
-  };
-</script>
+  </script>
 </body>
 </html>
