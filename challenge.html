@@ -6,141 +6,126 @@
   <title>چلنج 2048</title>
   <link rel="stylesheet" href="style/main.css">
   <style>
-    body { text-align: center; background: #faf8ef; font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif; }
-    .container { max-width: 500px; margin: 20px auto; padding: 20px; background: #f5f5dc; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-    button { background: #8f7a66; color: white; border: none; padding: 10px 20px; border-radius: 10px; margin: 5px; cursor: pointer; }
-    button:hover { background: #a58b71; }
-    input { padding: 8px; border: 1px solid #ccc; border-radius: 8px; width: 80%; margin: 5px 0; }
-    #game-frame { width: 100%; height: 500px; border: none; margin-top: 15px; border-radius: 10px; }
-    #timer { font-size: 18px; font-weight: bold; color: #776e65; margin-top: 10px; }
-    #leaderboard { margin-top: 15px; text-align: left; background: white; border-radius: 10px; padding: 10px; }
-    .leader-item { display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #eee; }
+    body {
+      background: #faf8ef;
+      font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+      text-align: center;
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      margin-top: 40px;
+    }
+    #leaderboard {
+      margin-top: 30px;
+      text-align: center;
+      background: #fff8e1;
+      padding: 20px;
+      border-radius: 12px;
+      width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .player {
+      margin: 4px 0;
+    }
+    #logout {
+      background: #8f7a66;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #logout:hover {
+      background: #a58b71;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
     <h1>🔥 چلنج 2048</h1>
+    <p id="welcome"></p>
+    <button id="logout">خروج</button>
 
-    <div id="auth-section">
-      <button id="googleLogin">ورود با گوگل</button>
-      <br>
-      <input type="text" id="guestName" placeholder="نام خود را وارد کنید">
-      <button id="guestLogin">ورود مهمان</button>
+    <!-- محل نمایش بازی -->
+    <div id="gameArea">
+      <p>🎮 بازی در حال بارگذاری است...</p>
     </div>
 
-    <div id="user-section" style="display:none;">
-      <p>👋 سلام، <span id="player-name"></span>!</p>
-      <button id="createBtn">ساخت چلنج جدید</button>
-      <div id="create-challenge" style="display:none;">
-        <input type="text" id="challengeName" placeholder="نام چلنج">
-        <input type="datetime-local" id="startTime">
-        <input type="datetime-local" id="endTime">
-        <button id="saveChallenge">ایجاد</button>
-      </div>
-
-      <div id="timer"></div>
-      <iframe id="game-frame" src="game.html"></iframe>
-      <h3>🏆 لیدربرد</h3>
-      <div id="leaderboard"></div>
+    <!-- لیدربرد -->
+    <div id="leaderboard">
+      <h3>🏆 جدول برترین‌ها</h3>
+      <div id="scores"></div>
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <script>
-    window.addEventListener("load", () => {
-      // ✅ پیکربندی فایربیس
-      const firebaseConfig = {
-        apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-        authDomain: "project-4706304311592930157.firebaseapp.com",
-        projectId: "project-4706304311592930157",
-        storageBucket: "project-4706304311592930157.firebasestorage.app",
-        messagingSenderId: "401832134319",
-        appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-        measurementId: "G-LVXWPLG38Q"
-      };
+    // تنظیمات Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+      authDomain: "project-4706304311592930157.firebaseapp.com",
+      projectId: "project-4706304311592930157",
+      storageBucket: "project-4706304311592930157.firebasestorage.app",
+      messagingSenderId: "401832134319",
+      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+      measurementId: "G-LVXWPLG38Q"
+    };
 
-      // ✅ مقداردهی اولیه
-      const app = firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-      const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-      let currentUser = null;
-      let timerInterval = null;
+    const welcomeEl = document.getElementById("welcome");
+    const scoresEl = document.getElementById("scores");
+    const logoutBtn = document.getElementById("logout");
+    const gameArea = document.getElementById("gameArea");
 
-      const authSection = document.getElementById("auth-section");
-      const userSection = document.getElementById("user-section");
-      const playerNameEl = document.getElementById("player-name");
-
-      // --- ورود با گوگل ---
-      document.getElementById("googleLogin").onclick = async () => {
-        try {
-          const provider = new firebase.auth.GoogleAuthProvider();
-          const result = await auth.signInWithPopup(provider);
-          currentUser = result.user;
-          showUserUI(currentUser.displayName);
-        } catch (e) {
-          console.error(e);
-          alert("❌ خطا در ورود با گوگل");
-        }
-      };
-
-      // --- ورود مهمان ---
-      document.getElementById("guestLogin").onclick = () => {
-        const name = document.getElementById("guestName").value.trim();
-        if (!name) return alert("نام را وارد کنید");
-        currentUser = { uid: "guest_" + Date.now(), displayName: name };
-        showUserUI(name);
-      };
-
-      function showUserUI(name) {
-        authSection.style.display = "none";
-        userSection.style.display = "block";
-        playerNameEl.textContent = name;
+    // بررسی ورود کاربر
+    onAuthStateChanged(auth, async (user) => {
+      const name = localStorage.getItem("playerName");
+      if (user || name) {
+        const displayName = name || user.displayName || "بازیکن ناشناس";
+        welcomeEl.textContent = `سلام ${displayName} 👋 خوش اومدی!`;
+        loadGame();
         loadLeaderboard();
-      }
-
-      // --- ساخت چلنج ---
-      document.getElementById("createBtn").onclick = () => {
-        document.getElementById("create-challenge").style.display = "block";
-      };
-
-      document.getElementById("saveChallenge").onclick = async () => {
-        const name = document.getElementById("challengeName").value.trim();
-        const start = new Date(document.getElementById("startTime").value);
-        const end = new Date(document.getElementById("endTime").value);
-        if (!name || !start || !end) return alert("تمام فیلدها را پر کنید");
-
-        const ref = await db.collection("challenges").add({
-          name,
-          startTime: start,
-          endTime: end,
-          creator: currentUser.displayName
-        });
-        const link = `${window.location.origin}${window.location.pathname}?challenge=${ref.id}`;
-        alert("✅ چلنج ساخته شد!\n📎 لینک: " + link);
-      };
-
-      // --- لیدربرد ---
-      function loadLeaderboard() {
-        db.collection("leaderboard")
-          .orderBy("score", "desc")
-          .limit(10)
-          .onSnapshot(snapshot => {
-            const board = document.getElementById("leaderboard");
-            board.innerHTML = "";
-            snapshot.forEach(doc => {
-              const d = doc.data();
-              board.innerHTML += `<div class="leader-item"><span>${d.name}</span><span>${d.score}</span></div>`;
-            });
-          });
+      } else {
+        // اگر کاربر وارد نشده بود برگرده به صفحه‌ی ورود
+        window.location.href = "index.html";
       }
     });
-  </script>
 
+    // دکمه خروج
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      localStorage.removeItem("playerName");
+      window.location.href = "index.html";
+    });
+
+    // شبیه‌سازی لود بازی (اینجا می‌تونی فایل اصلی بازی 2048 رو لود کنی)
+    function loadGame() {
+      gameArea.innerHTML = `
+        <iframe src="game.html" width="340" height="420" frameborder="0" style="border-radius:12px;"></iframe>
+      `;
+    }
+
+    // لود لیدربرد
+    async function loadLeaderboard() {
+      const q = query(collection(db, "leaderboard"), orderBy("score", "desc"));
+      const snapshot = await getDocs(q);
+      scoresEl.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        scoresEl.innerHTML += `<div class="player">⭐ ${data.name}: ${data.score}</div>`;
+      });
+    }
+  </script>
 </body>
 </html>
