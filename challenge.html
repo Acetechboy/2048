@@ -1,131 +1,156 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>چلنج 2048</title>
-  <link rel="stylesheet" href="style/main.css">
+  <meta charset="utf-8" />
+  <title>چلنچ 2048</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="style/main.css" rel="stylesheet" type="text/css">
   <style>
     body {
+      text-align: center;
       background: #faf8ef;
-      font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
-      text-align: center;
+      font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
       direction: rtl;
-      margin: 0;
-      padding: 0;
     }
-    .container {
-      margin-top: 40px;
-    }
-    #leaderboard {
+    #game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       margin-top: 30px;
-      text-align: center;
-      background: #fff8e1;
-      padding: 20px;
-      border-radius: 12px;
-      width: 320px;
-      margin-left: auto;
-      margin-right: auto;
     }
-    .player {
-      margin: 4px 0;
-    }
-    #logout {
-      background: #8f7a66;
-      color: white;
+    #backBtn, #timer {
+      margin-top: 10px;
+      padding: 10px 15px;
       border: none;
-      padding: 8px 14px;
       border-radius: 10px;
-      cursor: pointer;
       font-size: 16px;
+      background: #8f7a66;
+      color: #fff;
+      cursor: pointer;
     }
-    #logout:hover {
-      background: #a58b71;
+    #backBtn:hover {
+      background: #a28a78;
     }
   </style>
 </head>
+
 <body>
-
-  <div class="container">
-    <h1>🔥 چلنج 2048</h1>
-    <p id="welcome"></p>
-    <button id="logout">خروج</button>
-
-    <!-- محل نمایش بازی -->
-    <div id="gameArea">
-      <p>🎮 بازی در حال بارگذاری است...</p>
-    </div>
-
-    <!-- لیدربرد -->
-    <div id="leaderboard">
-      <h3>🏆 جدول برترین‌ها</h3>
-      <div id="scores"></div>
+  <h1>چلنچ 2048</h1>
+  <div id="game-container">
+    <div class="game-container">
+      <div class="game-message">
+        <p></p>
+        <div class="lower">
+          <a class="keep-playing-button">ادامه</a>
+          <a class="retry-button">دوباره</a>
+        </div>
+      </div>
+      <div class="grid-container">
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+        <div class="grid-row">
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+          <div class="grid-cell"></div>
+        </div>
+      </div>
+      <div class="tile-container"></div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <div id="timer">زمان باقی‌مانده: <span id="timeLeft">30:00</span></div>
+  <button id="backBtn" onclick="window.location.href='index.html'">بازگشت به منو</button>
 
-    // تنظیمات Firebase
+  <!-- فایل‌های اصلی 2048 -->
+  <script src="js/bind_polyfill.js"></script>
+  <script src="js/classlist_polyfill.js"></script>
+  <script src="js/animframe_polyfill.js"></script>
+  <script src="js/keyboard_input_manager.js"></script>
+  <script src="js/html_actuator.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/tile.js"></script>
+  <script src="js/local_storage_manager.js"></script>
+  <script src="js/game_manager.js"></script>
+
+  <script type="module">
+    // --- Firebase ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+
     const firebaseConfig = {
-      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-      authDomain: "project-4706304311592930157.firebaseapp.com",
-      projectId: "project-4706304311592930157",
-      storageBucket: "project-4706304311592930157.firebasestorage.app",
-      messagingSenderId: "401832134319",
-      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-      measurementId: "G-LVXWPLG38Q"
+      apiKey: "AIzaSyC0Y6-xxxxxxxxxxxxxxxxxxxxxx",
+      authDomain: "yourapp.firebaseapp.com",
+      projectId: "yourapp",
+      storageBucket: "yourapp.appspot.com",
+      messagingSenderId: "00000000000",
+      appId: "1:00000000000:web:xxxxxxxxxxxx"
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    const welcomeEl = document.getElementById("welcome");
-    const scoresEl = document.getElementById("scores");
-    const logoutBtn = document.getElementById("logout");
-    const gameArea = document.getElementById("gameArea");
+    let gameStarted = false;
+    let timeLeft = 1800; // 30 دقیقه
 
-    // بررسی ورود کاربر
-    onAuthStateChanged(auth, async (user) => {
-      const name = localStorage.getItem("playerName");
-      if (user || name) {
-        const displayName = name || user.displayName || "بازیکن ناشناس";
-        welcomeEl.textContent = `سلام ${displayName} 👋 خوش اومدی!`;
-        loadGame();
-        loadLeaderboard();
-      } else {
-        // اگر کاربر وارد نشده بود برگرده به صفحه‌ی ورود
-        window.location.href = "index.html";
+    function startTimer() {
+      const timerDisplay = document.getElementById("timeLeft");
+      const countdown = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          alert("زمان چلنج تمام شد!");
+          document.removeEventListener("keydown", listener);
+        } else {
+          timeLeft--;
+          const m = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+          const s = String(timeLeft % 60).padStart(2, "0");
+          timerDisplay.textContent = `${m}:${s}`;
+        }
+      }, 1000);
+    }
+
+    // ذخیره امتیاز
+    window.saveScore = async (score) => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        await addDoc(collection(db, "leaderboard"), {
+          name: user.displayName || "مهمان",
+          score: score,
+          timestamp: new Date()
+        });
+      } catch (e) {
+        console.error("خطا در ذخیره امتیاز:", e);
+      }
+    };
+
+    // اجرای بازی وقتی وارد شد
+    onAuthStateChanged(auth, (user) => {
+      if (user && !gameStarted) {
+        gameStarted = true;
+        new GameManager(4, KeyboardInputManager, HTMLActuator, LocalStorageManager);
+        startTimer();
       }
     });
-
-    // دکمه خروج
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      localStorage.removeItem("playerName");
-      window.location.href = "index.html";
-    });
-
-    // شبیه‌سازی لود بازی (اینجا می‌تونی فایل اصلی بازی 2048 رو لود کنی)
-    function loadGame() {
-      gameArea.innerHTML = `
-        <iframe src="game.html" width="340" height="420" frameborder="0" style="border-radius:12px;"></iframe>
-      `;
-    }
-
-    // لود لیدربرد
-    async function loadLeaderboard() {
-      const q = query(collection(db, "leaderboard"), orderBy("score", "desc"));
-      const snapshot = await getDocs(q);
-      scoresEl.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        scoresEl.innerHTML += `<div class="player">⭐ ${data.name}: ${data.score}</div>`;
-      });
-    }
   </script>
 </body>
 </html>
