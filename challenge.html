@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>چلنچ 2048</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="style/main.css" rel="stylesheet" type="text/css">
   <style>
     body {
@@ -12,73 +12,65 @@
       font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
       direction: rtl;
     }
-    #game-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 30px;
+    h1 {
+      margin-top: 20px;
+      color: #776e65;
     }
-    #backBtn, #timer {
-      margin-top: 10px;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
+    #timer {
+      margin-top: 15px;
+      font-size: 20px;
+      color: #8f7a66;
+    }
+    #backBtn {
+      margin-top: 20px;
       background: #8f7a66;
       color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
       cursor: pointer;
+      font-size: 16px;
     }
     #backBtn:hover {
-      background: #a28a78;
+      background: #9f8b77;
     }
   </style>
 </head>
 
 <body>
   <h1>چلنچ 2048</h1>
-  <div id="game-container">
-    <div class="game-container">
-      <div class="game-message">
-        <p></p>
-        <div class="lower">
-          <a class="keep-playing-button">ادامه</a>
-          <a class="retry-button">دوباره</a>
-        </div>
+
+  <div class="game-container">
+    <div class="game-message">
+      <p></p>
+      <div class="lower">
+        <a class="keep-playing-button">ادامه</a>
+        <a class="retry-button">دوباره</a>
       </div>
-      <div class="grid-container">
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-      </div>
-      <div class="tile-container"></div>
     </div>
+
+    <div class="grid-container">
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+      </div>
+    </div>
+
+    <div class="tile-container"></div>
   </div>
 
   <div id="timer">زمان باقی‌مانده: <span id="timeLeft">30:00</span></div>
   <button id="backBtn" onclick="window.location.href='index.html'">بازگشت به منو</button>
 
-  <!-- فایل‌های اصلی 2048 -->
+  <!-- فایل‌های اصلی بازی 2048 -->
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
@@ -89,68 +81,29 @@
   <script src="js/local_storage_manager.js"></script>
   <script src="js/game_manager.js"></script>
 
-  <script type="module">
-    // --- Firebase ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+  <script>
+    // اجرای بازی به محض لود صفحه
+    window.requestAnimationFrame(function () {
+      new GameManager(4, KeyboardInputManager, HTMLActuator, LocalStorageManager);
+      startTimer();
+    });
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC0Y6-xxxxxxxxxxxxxxxxxxxxxx",
-      authDomain: "yourapp.firebaseapp.com",
-      projectId: "yourapp",
-      storageBucket: "yourapp.appspot.com",
-      messagingSenderId: "00000000000",
-      appId: "1:00000000000:web:xxxxxxxxxxxx"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    let gameStarted = false;
-    let timeLeft = 1800; // 30 دقیقه
-
+    // تایمر چلنج
+    let timeLeft = 1800;
     function startTimer() {
-      const timerDisplay = document.getElementById("timeLeft");
-      const countdown = setInterval(() => {
+      const el = document.getElementById("timeLeft");
+      const timer = setInterval(() => {
         if (timeLeft <= 0) {
-          clearInterval(countdown);
+          clearInterval(timer);
           alert("زمان چلنج تمام شد!");
-          document.removeEventListener("keydown", listener);
         } else {
           timeLeft--;
           const m = String(Math.floor(timeLeft / 60)).padStart(2, "0");
           const s = String(timeLeft % 60).padStart(2, "0");
-          timerDisplay.textContent = `${m}:${s}`;
+          el.textContent = `${m}:${s}`;
         }
       }, 1000);
     }
-
-    // ذخیره امتیاز
-    window.saveScore = async (score) => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      try {
-        await addDoc(collection(db, "leaderboard"), {
-          name: user.displayName || "مهمان",
-          score: score,
-          timestamp: new Date()
-        });
-      } catch (e) {
-        console.error("خطا در ذخیره امتیاز:", e);
-      }
-    };
-
-    // اجرای بازی وقتی وارد شد
-    onAuthStateChanged(auth, (user) => {
-      if (user && !gameStarted) {
-        gameStarted = true;
-        new GameManager(4, KeyboardInputManager, HTMLActuator, LocalStorageManager);
-        startTimer();
-      }
-    });
   </script>
 </body>
 </html>
