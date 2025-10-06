@@ -1,64 +1,65 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>بازی 2048 آنلاین</title>
-  <link rel="stylesheet" href="style/main.css" />
-  <style>
-    body {
-      background: #faf8ef;
-      text-align: center;
-      font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
-    }
-    .menu {
-      margin-top: 50px;
-    }
-    h1 {
-      font-size: 48px;
-      color: #776e65;
-    }
-    button {
-      background: #8f7a66;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 12px;
-      margin: 8px;
-      font-size: 18px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    button:hover {
-      background: #a58b71;
-    }
-    input {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      width: 200px;
-      text-align: center;
-      font-size: 16px;
-    }
-  </style>
+  <meta charset="utf-8">
+  <title>2048 چَلِنج</title>
+  <link href="style/main.css" rel="stylesheet" type="text/css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-  <div class="menu">
-    <h1>🎮 بازی 2048 آنلاین</h1>
-    <div id="auth-section">
-      <button id="googleLogin">ورود با گوگل</button><br />
-      <input type="text" id="guestName" placeholder="نام خود را وارد کنید" /><br />
-      <button id="guestLogin">ورود مهمان</button>
+<body dir="rtl">
+  <div class="container">
+    <div class="heading">
+      <h1 class="title">2048 چَلِنج</h1>
+      <div class="scores-container">
+        <div class="score-container">0</div>
+        <div class="best-container">0</div>
+      </div>
+    </div>
+
+    <div id="auth-section" style="text-align:center; margin: 20px;">
+      <button id="googleLogin">ورود با گوگل</button>
+      <button id="guestLogin">ورود به عنوان مهمان</button>
+      <div id="nameInput" style="display:none; margin-top:10px;">
+        <input id="guestName" placeholder="نام خود را وارد کنید">
+        <button id="saveGuestName">ادامه</button>
+      </div>
+    </div>
+
+    <div id="challenge-section" style="display:none; text-align:center;">
+      <button id="createChallenge">ساخت چالش جدید</button>
+      <div id="challengeForm" style="display:none; margin-top:10px;">
+        <input id="challengeName" placeholder="نام چالش">
+        <input id="challengeTime" type="number" placeholder="مدت (دقیقه)">
+        <button id="startChallenge">شروع</button>
+      </div>
+      <div id="leaderboard" style="margin-top:20px;"></div>
+    </div>
+
+    <div id="game-section" style="display:none;">
+      <div class="game-container">
+        <div class="grid-container">
+          <div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div>
+        </div>
+        <div class="tile-container"></div>
+      </div>
+      <p id="timer" style="text-align:center; margin-top:10px;">زمان باقی‌مانده: 30:00</p>
     </div>
   </div>
 
-  <!-- Firebase Modular SDK -->
+  <!-- Firebase -->
   <script type="module">
-    // ✅ import های مدرن فایربیس
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDocs, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // ✅ تنظیمات فایربیس
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
       authDomain: "project-4706304311592930157.firebaseapp.com",
@@ -69,42 +70,108 @@
       measurementId: "G-LVXWPLG38Q"
     };
 
-    // ✅ اتصال فایربیس
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
+    let currentUser = null;
+    let challengeActive = false;
+    let timerInterval;
 
-    // 🎯 دکمه ورود با گوگل
-    const googleBtn = document.getElementById("googleLogin");
-    googleBtn.addEventListener("click", async () => {
+    // ورود با گوگل
+    document.getElementById("googleLogin").onclick = async () => {
+      const provider = new GoogleAuthProvider();
       try {
-        const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        localStorage.setItem("playerName", user.displayName || "کاربر گوگل");
-        window.location.href = "challenge.html";
-      } catch (error) {
-        console.error(error);
-        alert("❌ خطا در ورود با گوگل");
+        currentUser = result.user;
+        showChallengeMenu();
+      } catch (err) {
+        alert("خطا در ورود با گوگل");
       }
-    });
+    };
 
-    // 🎯 دکمه ورود مهمان
-    const guestBtn = document.getElementById("guestLogin");
-    guestBtn.addEventListener("click", async () => {
+    // ورود مهمان
+    document.getElementById("guestLogin").onclick = () => {
+      document.getElementById("nameInput").style.display = "block";
+    };
+
+    document.getElementById("saveGuestName").onclick = async () => {
       const name = document.getElementById("guestName").value.trim();
-      if (!name) {
-        alert("لطفاً نام خود را وارد کنید");
-        return;
-      }
-      try {
-        await signInAnonymously(auth);
-        localStorage.setItem("playerName", name);
-        window.location.href = "challenge.html";
-      } catch (error) {
-        console.error(error);
-        alert("❌ خطا در ورود مهمان");
-      }
-    });
+      if (!name) return alert("نام را وارد کنید");
+      await signInAnonymously(auth);
+      currentUser = { displayName: name, uid: Math.random().toString(36).slice(2) };
+      showChallengeMenu();
+    };
+
+    function showChallengeMenu() {
+      document.getElementById("auth-section").style.display = "none";
+      document.getElementById("challenge-section").style.display = "block";
+    }
+
+    // ساخت چالش جدید
+    document.getElementById("createChallenge").onclick = () => {
+      document.getElementById("challengeForm").style.display = "block";
+    };
+
+    document.getElementById("startChallenge").onclick = () => {
+      const name = document.getElementById("challengeName").value.trim();
+      const time = parseInt(document.getElementById("challengeTime").value) || 30;
+      if (!name) return alert("نام چالش را وارد کنید");
+      startChallenge(name, time);
+    };
+
+    async function startChallenge(name, time) {
+      challengeActive = true;
+      document.getElementById("challenge-section").style.display = "none";
+      document.getElementById("game-section").style.display = "block";
+      loadGame();
+      startTimer(time);
+    }
+
+    function loadGame() {
+      // فایل‌های اصلی بازی 2048
+      const scripts = [
+        "js/bind_polyfill.js",
+        "js/classlist_polyfill.js",
+        "js/animframe_polyfill.js",
+        "js/keyboard_input_manager.js",
+        "js/html_actuator.js",
+        "js/grid.js",
+        "js/tile.js",
+        "js/local_storage_manager.js",
+        "js/game_manager.js",
+        "js/application.js"
+      ];
+      scripts.forEach(src => {
+        const s = document.createElement("script");
+        s.src = src;
+        document.body.appendChild(s);
+      });
+    }
+
+    function startTimer(minutes) {
+      let remaining = minutes * 60;
+      timerInterval = setInterval(() => {
+        const min = Math.floor(remaining / 60);
+        const sec = remaining % 60;
+        document.getElementById("timer").textContent = `زمان باقی‌مانده: ${min}:${sec < 10 ? '0' : ''}${sec}`;
+        remaining--;
+        if (remaining < 0) {
+          clearInterval(timerInterval);
+          challengeActive = false;
+          alert("زمان تمام شد!");
+        }
+      }, 1000);
+    }
+
+    async function saveScore(score) {
+      if (!currentUser) return;
+      await setDoc(doc(db, "leaderboard", currentUser.uid), {
+        name: currentUser.displayName || "مهمان",
+        score: score,
+        timestamp: new Date()
+      });
+    }
+
   </script>
 </body>
 </html>
