@@ -1,5 +1,5 @@
 function GameManager(size, InputManager, Actuator, StorageManager) {
-  this.size           = size; // Grid size
+  this.size           = size; // اندازه‌ی شبکه (۴×۴)
   this.inputManager   = new InputManager;
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
@@ -8,39 +8,30 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
-  this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
   this.setup();
 }
 
-// Restart the game
+// شروع مجدد
 GameManager.prototype.restart = function () {
   this.storageManager.clearGameState();
-  this.actuator.continueGame(); // Clear the game won/lost message
+  this.actuator.continueGame();
   this.setup();
 };
 
-// Keep playing after winning (allows going past 2048)
-GameManager.prototype.keepPlaying = function () {
-  this.keepPlaying = true;
-  this.actuator.continueGame();
-};
-
-// Return true if the game is lost, or has won and the user hasn't kept playing
+// چک کن ادامه بازی فعاله یا نه
 GameManager.prototype.isGameTerminated = function () {
-  if (this.over || (this.won && !this.keepPlaying)) {
-    return true;
-  } else {
-    return false;
-  }
+  return this.over || (this.won && !this.keepPlaying);
 };
 
-// Set up the game
+// ساخت صفحه جدید
 GameManager.prototype.setup = function () {
   var previousState = this.storageManager.getGameState();
 
+  // اگر حالت قبلی ذخیره شده بود
   if (previousState) {
-    this.grid        = new Grid(previousState.grid.size, previousState.grid.cells); // Reload grid
+    this.grid        = new Grid(previousState.grid.size,
+                                previousState.grid.cells);
     this.score       = previousState.score;
     this.over        = previousState.over;
     this.won         = previousState.won;
@@ -52,24 +43,21 @@ GameManager.prototype.setup = function () {
     this.won         = false;
     this.keepPlaying = false;
 
-    // Add the initial tiles
+    // دو خانه تصادفی اضافه کن
     this.addStartTiles();
   }
-
-  // برای جلوگیری از ارسال تکراری
-  this._lastSavedScore = -1;
 
   this.actuate();
 };
 
-// Set up the initial tiles to start the game with
+// کاشی‌های شروع
 GameManager.prototype.addStartTiles = function () {
   for (var i = 0; i < this.startTiles; i++) {
     this.addRandomTile();
   }
 };
 
-// Adds a tile in a random position
+// اضافه کردن کاشی جدید
 GameManager.prototype.addRandomTile = function () {
   if (this.grid.cellsAvailable()) {
     var value = Math.random() < 0.9 ? 2 : 4;
@@ -79,55 +67,7 @@ GameManager.prototype.addRandomTile = function () {
   }
 };
 
-// Sends the updated grid to the actuator
-GameManager.prototype.actuate = function () {
-  if (this.storageManager.getBestScore() < this.score) {
-    this.storageManager.setBestScore(this.score);
-  }
-
-  this.storageManager.setGameState(this.serialize());
-
-  this.actuator.actuate(this.grid, {
-    score:      this.score,
-    over:       this.over,
-    won:        this.won,
-    bestScore:  this.storageManager.getBestScore(),
-    terminated: this.isGameTerminated()
-  });
-
-  // ====== NEW PART: Send score to leaderboard if available ======
-  try {
-    if (typeof window !== "undefined" && typeof window.updateScore === "function") {
-      if (this.score !== this._lastSavedScore) {
-        window.updateScore(this.score);
-        this._lastSavedScore = this.score;
-      }
-    } else if (typeof submitScore === "function") {
-      if (this.score !== this._lastSavedScore) {
-        submitScore(this.score);
-        this._lastSavedScore = this.score;
-      }
-    }
-  } catch (e) {
-    console.error("Error updating leaderboard:", e);
-  }
-
-  // اطمینان از ذخیره امتیاز در پایان بازی
-  if (this.over) {
-    try {
-      if (typeof window !== "undefined" && typeof window.updateScore === "function") {
-        if (this.score !== this._lastSavedScore) {
-          window.updateScore(this.score);
-          this._lastSavedScore = this.score;
-        }
-      }
-    } catch (e) {
-      console.error("Final score send failed:", e);
-    }
-  }
-};
-
-// Represent the current game as an object
+// ذخیره‌ی وضعیت
 GameManager.prototype.serialize = function () {
   return {
     grid:        this.grid.serialize(),
@@ -138,28 +78,40 @@ GameManager.prototype.serialize = function () {
   };
 };
 
-// Save all tile positions and remove merger info
-GameManager.prototype.prepareTiles = function () {
-  this.grid.eachCell(function (x, y, tile) {
-    if (tile) {
-      tile.mergedFrom = null;
-      tile.savePosition();
+// بعد از هر حرکت نمایش بده
+GameManager.prototype.actuate = function () {
+  if (this.storageManager.getBestScore() < this.score) {
+    this.storageManager.setBestScore(this.score);
+  }
+
+  if (this.over && typeof window.saveScore === "function") {
+    // وقتی بازی تموم شد، امتیاز ذخیره کن
+    try {
+      window.saveScore(this.score);
+    } catch (e) {
+      console.error("خطا در ذخیره امتیاز:", e);
     }
+  }
+
+  this.storageManager.setGameState(this.serialize());
+  this.actuator.actuate(this.grid, {
+    score: this.score,
+    over: this.over,
+    won: this.won,
+    bestScore: this.storageManager.getBestScore(),
+    terminated: this.isGameTerminated()
   });
 };
 
-// Move a tile and its representation
-GameManager.prototype.moveTile = function (tile, cell) {
-  this.grid.cells[tile.x][tile.y] = null;
-  this.grid.cells[cell.x][cell.y] = tile;
-  tile.updatePosition(cell);
+// ادامه بازی
+GameManager.prototype.keepPlaying = function () {
+  this.keepPlaying = true;
+  this.actuator.continueGame();
 };
 
-// Move tiles on the grid in the specified direction
+// بررسی برد
 GameManager.prototype.move = function (direction) {
-  var self = this;
-
-  if (this.isGameTerminated()) return; // Don't do anything if the game's over
+  if (this.isGameTerminated()) return; // بازی تموم شده
 
   var cell, tile;
 
@@ -172,64 +124,59 @@ GameManager.prototype.move = function (direction) {
   traversals.x.forEach(function (x) {
     traversals.y.forEach(function (y) {
       cell = { x: x, y: y };
-      tile = self.grid.cellContent(cell);
+      tile = this.grid.cellContent(cell);
 
       if (tile) {
-        var positions = self.findFarthestPosition(cell, vector);
-        var next      = self.grid.cellContent(positions.next);
+        var positions = this.findFarthestPosition(cell, vector);
+        var next      = this.grid.cellContent(positions.next);
 
-        // Only one merger per row traversal?
         if (next && next.value === tile.value && !next.mergedFrom) {
           var merged = new Tile(positions.next, tile.value * 2);
           merged.mergedFrom = [tile, next];
 
-          self.grid.insertTile(merged);
-          self.grid.removeTile(tile);
+          this.grid.insertTile(merged);
+          this.grid.removeTile(tile);
 
-          // Converge the two tiles' positions
           tile.updatePosition(positions.next);
 
-          // Update the score
-          self.score += merged.value;
+          this.score += merged.value;
 
-          // The mighty 2048 tile
-          if (merged.value === 2048) self.won = true;
+          if (merged.value === 2048) this.won = true;
         } else {
-          self.moveTile(tile, positions.farthest);
+          this.moveTile(tile, positions.farthest);
         }
 
-        if (!self.positionsEqual(cell, tile)) {
-          moved = true; // The tile moved from its original cell!
+        if (!this.positionsEqual(cell, tile)) {
+          moved = true;
         }
       }
-    });
-  });
+    }, this);
+  }, this);
 
   if (moved) {
     this.addRandomTile();
 
     if (!this.movesAvailable()) {
-      this.over = true; // Game over!
+      this.over = true;
     }
 
     this.actuate();
   }
 };
 
-// Get the vector representing the chosen direction
+// ساخت بردار حرکت
 GameManager.prototype.getVector = function (direction) {
-  // Vectors representing tile movement
   var map = {
-    0: { x: 0,  y: -1 }, // Up
-    1: { x: 1,  y: 0 },  // Right
-    2: { x: 0,  y: 1 },  // Down
-    3: { x: -1, y: 0 }   // Left
+    0: { x: 0,  y: -1 }, // بالا
+    1: { x: 1,  y: 0 },  // راست
+    2: { x: 0,  y: 1 },  // پایین
+    3: { x: -1, y: 0 }   // چپ
   };
 
   return map[direction];
 };
 
-// Build a list of positions to traverse in the right order
+// ترتیب پیمایش
 GameManager.prototype.buildTraversals = function (vector) {
   var traversals = { x: [], y: [] };
 
@@ -238,7 +185,6 @@ GameManager.prototype.buildTraversals = function (vector) {
     traversals.y.push(pos);
   }
 
-  // Always traverse from the farthest cell in the chosen direction
   if (vector.x === 1) traversals.x = traversals.x.reverse();
   if (vector.y === 1) traversals.y = traversals.y.reverse();
 
@@ -250,7 +196,7 @@ GameManager.prototype.findFarthestPosition = function (cell, vector) {
 
   do {
     previous = cell;
-    cell     = { x: previous.x + vector.x, y: previous.y + vector.y };
+    cell = { x: previous.x + vector.x, y: previous.y + vector.y };
   } while (this.grid.withinBounds(cell) && this.grid.cellAvailable(cell));
 
   return {
@@ -263,6 +209,7 @@ GameManager.prototype.movesAvailable = function () {
   return this.grid.cellsAvailable() || this.tileMatchesAvailable();
 };
 
+// بررسی ترکیب کاشی‌ها
 GameManager.prototype.tileMatchesAvailable = function () {
   var self = this;
 
@@ -280,7 +227,7 @@ GameManager.prototype.tileMatchesAvailable = function () {
           var other  = self.grid.cellContent(cell);
 
           if (other && other.value === tile.value) {
-            return true; // These two tiles can be merged
+            return true;
           }
         }
       }
@@ -290,6 +237,24 @@ GameManager.prototype.tileMatchesAvailable = function () {
   return false;
 };
 
+// حرکت دادن کاشی
+GameManager.prototype.moveTile = function (tile, cell) {
+  this.grid.cells[tile.x][tile.y] = null;
+  this.grid.cells[cell.x][cell.y] = tile;
+  tile.updatePosition(cell);
+};
+
+// آماده‌سازی کاشی‌ها
+GameManager.prototype.prepareTiles = function () {
+  this.grid.eachCell(function (x, y, tile) {
+    if (tile) {
+      tile.mergedFrom = null;
+      tile.savePosition();
+    }
+  });
+};
+
+// بررسی تساوی موقعیت
 GameManager.prototype.positionsEqual = function (first, second) {
   return first.x === second.x && first.y === second.y;
 };
