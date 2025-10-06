@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>بازی 2048 آنلاین</title>
-  <link rel="stylesheet" href="style/main.css">
+  <link rel="stylesheet" href="style/main.css" />
   <style>
     body {
       background: #faf8ef;
@@ -27,70 +27,83 @@
       margin: 8px;
       font-size: 18px;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
     button:hover {
       background: #a58b71;
     }
-    #guestName {
+    input {
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 8px;
       width: 200px;
+      text-align: center;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-
   <div class="menu">
     <h1>🎮 بازی 2048 آنلاین</h1>
     <div id="auth-section">
-      <button id="googleLogin">ورود با گوگل</button><br>
-      <input type="text" id="guestName" placeholder="نام خود را وارد کنید">
+      <button id="googleLogin">ورود با گوگل</button><br />
+      <input type="text" id="guestName" placeholder="نام خود را وارد کنید" /><br />
       <button id="guestLogin">ورود مهمان</button>
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-auth-compat.js"></script>
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    // ✅ import های مدرن فایربیس
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  <script>
-    window.addEventListener("load", () => {
-      // --- تنظیمات فایربیس ---
-      const firebaseConfig = {
-        apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-        authDomain: "project-4706304311592930157.firebaseapp.com",
-        projectId: "project-4706304311592930157",
-        storageBucket: "project-4706304311592930157.firebasestorage.app",
-        messagingSenderId: "401832134319",
-        appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-        measurementId: "G-LVXWPLG38Q"
-      };
+    // ✅ تنظیمات فایربیس
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+      authDomain: "project-4706304311592930157.firebaseapp.com",
+      projectId: "project-4706304311592930157",
+      storageBucket: "project-4706304311592930157.firebasestorage.app",
+      messagingSenderId: "401832134319",
+      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+      measurementId: "G-LVXWPLG38Q"
+    };
 
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
+    // ✅ اتصال فایربیس
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-      // --- ورود با گوگل ---
-      document.getElementById("googleLogin").onclick = async () => {
-        try {
-          const provider = new firebase.auth.GoogleAuthProvider();
-          const result = await auth.signInWithPopup(provider);
-          const user = result.user;
-          localStorage.setItem("playerName", user.displayName);
-          window.location.href = "challenge.html";
-        } catch (error) {
-          console.error(error);
-          alert("❌ خطا در ورود با گوگل");
-        }
-      };
+    // 🎯 دکمه ورود با گوگل
+    const googleBtn = document.getElementById("googleLogin");
+    googleBtn.addEventListener("click", async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        localStorage.setItem("playerName", user.displayName || "کاربر گوگل");
+        window.location.href = "challenge.html";
+      } catch (error) {
+        console.error(error);
+        alert("❌ خطا در ورود با گوگل");
+      }
+    });
 
-      // --- ورود مهمان ---
-      document.getElementById("guestLogin").onclick = () => {
-        const name = document.getElementById("guestName").value.trim();
-        if (!name) return alert("نام را وارد کنید");
+    // 🎯 دکمه ورود مهمان
+    const guestBtn = document.getElementById("guestLogin");
+    guestBtn.addEventListener("click", async () => {
+      const name = document.getElementById("guestName").value.trim();
+      if (!name) {
+        alert("لطفاً نام خود را وارد کنید");
+        return;
+      }
+      try {
+        await signInAnonymously(auth);
         localStorage.setItem("playerName", name);
         window.location.href = "challenge.html";
-      };
+      } catch (error) {
+        console.error(error);
+        alert("❌ خطا در ورود مهمان");
+      }
     });
   </script>
 </body>
