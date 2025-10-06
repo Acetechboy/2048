@@ -1,60 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2048 Challenge Game</title>
+  <title>بازی 2048</title>
   <link href="style/main.css" rel="stylesheet" type="text/css">
 </head>
 <body>
+
   <div class="container">
     <div class="heading">
       <h1 class="title">2048</h1>
       <div class="scores-container">
-        <div class="score-container">0</div>
-        <div class="best-container">0</div>
+        <div id="score" class="score-container">0</div>
       </div>
+    </div>
+
+    <div class="above-game">
+      <p>از کلیدهای جهت‌دار استفاده کن!</p>
+      <a class="restart-button">شروع مجدد</a>
     </div>
 
     <div class="game-container">
       <div class="grid-container">
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
+        <div class="grid-row"><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div></div>
       </div>
-
       <div class="tile-container"></div>
-    </div>
-
-    <div class="lower-container">
-      <p class="game-explanation">
-        <strong>Use your arrow keys</strong> to move the tiles. When two tiles with the same number touch, they merge into one!
-      </p>
     </div>
   </div>
 
-  <!-- Scripts for game logic -->
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
@@ -66,29 +43,32 @@
   <script src="js/game_manager.js"></script>
   <script src="js/application.js"></script>
 
-  <!-- Send score to parent window -->
-  <script>
-    let lastScore = 0;
-    const scoreObserver = new MutationObserver(() => {
-      const scoreEl = document.querySelector('.score-container');
-      const score = parseInt(scoreEl.textContent) || 0;
-      if (score !== lastScore) {
-        lastScore = score;
-        // Send score update to parent window
-        window.parent.postMessage({ type: 'scoreUpdate', score: score }, '*');
-      }
-    });
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Observe score changes
-    const scoreContainer = document.querySelector('.score-container');
-    if (scoreContainer) {
-      scoreObserver.observe(scoreContainer, { childList: true });
-    }
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+      authDomain: "project-4706304311592930157.firebaseapp.com",
+      projectId: "project-4706304311592930157",
+      storageBucket: "project-4706304311592930157.firebasestorage.app",
+      messagingSenderId: "401832134319",
+      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+      measurementId: "G-LVXWPLG38Q"
+    };
 
-    // When game over → send final score
-    document.addEventListener('gameover', () => {
-      window.parent.postMessage({ type: 'gameOver', score: lastScore }, '*');
-    });
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ثبت امتیاز پس از پایان بازی
+    window.saveScore = async function(score) {
+      const name = localStorage.getItem("playerName") || "بازیکن ناشناس";
+      await addDoc(collection(db, "leaderboard"), {
+        name: name,
+        score: score,
+        time: serverTimestamp()
+      });
+    };
   </script>
 </body>
 </html>
