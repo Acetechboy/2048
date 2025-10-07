@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // دکمه بازگشت به داشبورد (جدید)
+    // دکمه بازگشت به داشبورد
     const backBtn = document.getElementById('back-to-dashboard');
     if (backBtn) {
         backBtn.addEventListener('click', () => {
