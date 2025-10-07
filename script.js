@@ -48,7 +48,7 @@ class Tile {
     }
 }
 
-// کلاس GameManager (با move کامل برای up/down/left/right)
+// کلاس GameManager (با RTL: col 0=راست, move reverse بر اساس RTL)
 class GameManager {
     constructor() {
         this.size = 4;
@@ -72,55 +72,42 @@ class GameManager {
     }
     move(direction) {
         let moved = false;
-        if (direction === 'left' || direction === 'right') {
-            let rowDir = 1;
-            let colDir = direction === 'left' ? 1 : -1;
-            if (direction === 'right') {
-                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
-                colDir = -1;
-            }
+        // RTL: left=به راست (col کم به زیاد), right=به چپ (col زیاد به کم)
+        if (direction === 'left') { // به راست در RTL
             for (let i = 0; i < this.size; i++) {
-                let row = this.grid[i].filter(t => t);
-                for (let j = 0; j < row.length - 1; j++) {
-                    if (row[j].value === row[j + 1].value) {
-                        row[j].value *= 2;
-                        this.score += row[j].value;
-                        row.splice(j + 1, 1);
-                        moved = true;
-                    }
-                }
-                while (row.length < this.size) row.push(null);
-                this.grid[i] = row;
+                let row = this.grid[i].slice().reverse(); // reverse برای RTL (col 0=راست آخر می‌شه)
+                row = this.traverse(row);
+                this.grid[i] = row.reverse().map((t, idx) => t ? new Tile(t.value, i, 3 - idx) : null);
+                if (this.hasMoved(this.grid[i])) moved = true;
             }
-            if (direction === 'right') {
-                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
+        } else if (direction === 'right') { // به چپ در RTL
+            for (let i = 0; i < this.size; i++) {
+                let row = this.grid[i].slice();
+                row = this.traverse(row);
+                this.grid[i] = row.map((t, idx) => t ? new Tile(t.value, i, idx) : null);
+                if (this.hasMoved(this.grid[i])) moved = true;
             }
-        } else if (direction === 'up' || direction === 'down') {
+        } else if (direction === 'up') { // بالا: transpose + up
             this.transpose();
-            if (direction === 'down') {
-                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
-            }
-            // حالا مثل left/right عمل کن
-            let colDir = 1;
             for (let j = 0; j < this.size; j++) {
-                let col = [];
-                for (let i = 0; i < this.size; i++) col.push(this.grid[i][j]);
-                col = col.filter(t => t);
-                for (let i = 0; i < col.length - 1; i++) {
-                    if (col[i].value === col[i + 1].value) {
-                        col[i].value *= 2;
-                        this.score += col[i].value;
-                        col.splice(i + 1, 1);
-                        moved = true;
-                    }
-                }
-                while (col.length < this.size) col.push(null);
+                let col = this.grid.map(row => row[j]).slice();
+                col = this.traverse(col);
                 for (let i = 0; i < this.size; i++) {
-                    this.grid[i][j] = col[i];
+                    this.grid[i][j] = col[i] ? new Tile(col[i].value, i, j) : null;
                 }
+                if (this.hasMoved(col)) moved = true;
             }
-            if (direction === 'down') {
-                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
+            this.transpose();
+        } else if (direction === 'down') { // پایین: transpose + down (reverse col)
+            this.transpose();
+            for (let j = 0; j < this.size; j++) {
+                let col = this.grid.map(row => row[j]).slice().reverse();
+                col = this.traverse(col);
+                col = col.reverse();
+                for (let i = 0; i < this.size; i++) {
+                    this.grid[i][j] = col[i] ? new Tile(col[i].value, i, j) : null;
+                }
+                if (this.hasMoved(col)) moved = true;
             }
             this.transpose();
         }
@@ -130,6 +117,21 @@ class GameManager {
             document.getElementById('game-message').textContent = 'بازی تمام شد!';
             document.getElementById('save-score').style.display = 'block';
         }
+    }
+    traverse(cells) {
+        let newCells = cells.filter(t => t);
+        for (let i = 0; i < newCells.length - 1; i++) {
+            if (newCells[i].value === newCells[i + 1].value) {
+                newCells[i].value *= 2;
+                this.score += newCells[i].value;
+                newCells.splice(i + 1, 1);
+            }
+        }
+        while (newCells.length < this.size) newCells.push(null);
+        return newCells;
+    }
+    hasMoved(cells) {
+        return !cells.every((cell, idx) => !cell || cells[idx].value === this.grid[cells[0]?.row || 0][idx]?.value);
     }
     transpose() {
         for (let i = 0; i < this.size; i++) {
@@ -175,7 +177,7 @@ class GameManager {
 document.addEventListener('DOMContentLoaded', function() {
     loadUser();  // لود لاگین
 
-    // رویدادهای ورود
+    // رویدادهای ورود (همون قبلی)
     const guestBtn = document.getElementById('guest-btn');
     if (guestBtn) {
         guestBtn.addEventListener('click', () => {
@@ -225,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ساخت چلنج
+    // ساخت چلنج (همون قبلی)
     const createChallengeBtn = document.getElementById('create-challenge-btn');
     if (createChallengeBtn) {
         createChallengeBtn.addEventListener('click', () => {
@@ -264,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // بازی تستی
+    // بازی تستی (همون قبلی)
     const testGameBtn = document.getElementById('test-game-btn');
     if (testGameBtn) {
         testGameBtn.addEventListener('click', () => {
@@ -286,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ذخیره امتیاز
+    // ذخیره امتیاز (همون قبلی)
     const saveScoreBtn = document.getElementById('save-score');
     if (saveScoreBtn) {
         saveScoreBtn.addEventListener('click', () => {
@@ -322,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // خروج از بازی
+    // خروج از بازی (همون قبلی)
     const gameContainer = document.getElementById('game-container');
     if (gameContainer) {
         gameContainer.addEventListener('click', (e) => {
@@ -334,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // چک چلنج در URL
+    // چک چلنج در URL (همون قبلی)
     const challengeId = new URLSearchParams(window.location.search).get('challenge');
     if (challengeId && !loadUser()) {
         alert('برای شرکت در چلنج، ابتدا وارد شوید.');
@@ -344,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// تابع لیدربورد
+// تابع لیدربورد (همون قبلی)
 function loadLeaderboard(challengeId) {
     db.collection('scores')
         .where('challengeId', '==', challengeId)
@@ -371,7 +373,7 @@ function loadLeaderboard(challengeId) {
         });
 }
 
-// مدیریت auth گوگل
+// مدیریت auth گوگل (همون قبلی)
 auth.onAuthStateChanged((user) => {
     if (user && !currentUser) {
         currentUser = user;
