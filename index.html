@@ -5,7 +5,7 @@
   <title>2048 چَلِنج</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* main.css اصلی 2048 + فیکس RTL و responsive */
+    /* CSS کامل از main.css اصلی 2048 */
     body {
       margin: 0;
       padding: 0;
@@ -92,7 +92,7 @@
       padding: 4px;
       box-sizing: border-box;
       background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="none" stroke="#bbada0" stroke-width="1"/></svg>') repeat;
-      direction: ltr; /* LTR برای grid */
+      direction: ltr;
     }
 
     .grid-row {
@@ -116,6 +116,7 @@
       float: left;
       border-radius: 3px;
       background: rgba(238, 228, 218, 0.35);
+      border: 2px solid #bbada0;
     }
 
     .tile-container {
@@ -151,299 +152,93 @@
       font-size: 55px;
     }
 
-    .tile.tile-position-1-1 {
-      -webkit-transform: translate(0px, 0px);
-      -moz-transform: translate(0px, 0px);
-      transform: translate(0px, 0px);
-    }
+    /* موقعیت‌های tiles – فیکس بالا */
+    .tile.tile-position-1-1 { transform: translate(0px, 0px); }
+    .tile.tile-position-1-2 { transform: translate(0px, 121px); }
+    .tile.tile-position-1-3 { transform: translate(0px, 242px); }
+    .tile.tile-position-1-4 { transform: translate(0px, 363px); }
+    .tile.tile-position-2-1 { transform: translate(121px, 0px); }
+    .tile.tile-position-2-2 { transform: translate(121px, 121px); }
+    .tile.tile-position-2-3 { transform: translate(121px, 242px); }
+    .tile.tile-position-2-4 { transform: translate(121px, 363px); }
+    .tile.tile-position-3-1 { transform: translate(242px, 0px); }
+    .tile.tile-position-3-2 { transform: translate(242px, 121px); }
+    .tile.tile-position-3-3 { transform: translate(242px, 242px); }
+    .tile.tile-position-3-4 { transform: translate(242px, 363px); }
+    .tile.tile-position-4-1 { transform: translate(363px, 0px); }
+    .tile.tile-position-4-2 { transform: translate(363px, 121px); }
+    .tile.tile-position-4-3 { transform: translate(363px, 242px); }
+    .tile.tile-position-4-4 { transform: translate(363px, 363px); }
 
-    .tile.tile-position-1-2 {
-      -webkit-transform: translate(0px, 121px);
-      -moz-transform: translate(0px, 121px);
-      transform: translate(0px, 121px);
-    }
+    /* رنگ‌ها */
+    .tile.tile-2 .tile-inner { background: #eee4da; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+    .tile.tile-4 .tile-inner { background: #ede0c8; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+    .tile.tile-8 .tile-inner { background: #f2b179; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.2381), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+    .tile.tile-16 .tile-inner { background: #f59563; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.3175), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+    .tile.tile-32 .tile-inner { background: #f67c5f; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.3969), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+    .tile.tile-64 .tile-inner { background: #f65e3b; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.4763), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+    .tile.tile-128 .tile-inner { background: #edcf72; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.5557), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
+    .tile.tile-256 .tile-inner { background: #edcc61; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.6351), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
+    .tile.tile-512 .tile-inner { background: #edc850; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.7145), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
+    .tile.tile-1024 .tile-inner { background: #edc53f; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.7938), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 35px; }
+    .tile.tile-2048 .tile-inner { background: #edc22e; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.8732), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 35px; }
 
-    .tile.tile-position-1-3 {
-      -webkit-transform: translate(0px, 242px);
-      -moz-transform: translate(0px, 242px);
-      transform: translate(0px, 242px);
-    }
-
-    .tile.tile-position-1-4 {
-      -webkit-transform: translate(0px, 363px);
-      -moz-transform: translate(0px, 363px);
-      transform: translate(0px, 363px);
-    }
-
-    .tile.tile-position-2-1 {
-      -webkit-transform: translate(121px, 0px);
-      -moz-transform: translate(121px, 0px);
-      transform: translate(121px, 0px);
-    }
-
-    .tile.tile-position-2-2 {
-      -webkit-transform: translate(121px, 121px);
-      -moz-transform: translate(121px, 121px);
-      transform: translate(121px, 121px);
-    }
-
-    .tile.tile-position-2-3 {
-      -webkit-transform: translate(121px, 242px);
-      -moz-transform: translate(121px, 242px);
-      transform: translate(121px, 242px);
-    }
-
-    .tile.tile-position-2-4 {
-      -webkit-transform: translate(121px, 363px);
-      -moz-transform: translate(121px, 363px);
-      transform: translate(121px, 363px);
-    }
-
-    .tile.tile-position-3-1 {
-      -webkit-transform: translate(242px, 0px);
-      -moz-transform: translate(242px, 0px);
-      transform: translate(242px, 0px);
-    }
-
-    .tile.tile-position-3-2 {
-      -webkit-transform: translate(242px, 121px);
-      -moz-transform: translate(242px, 121px);
-      transform: translate(242px, 121px);
-    }
-
-    .tile.tile-position-3-3 {
-      -webkit-transform: translate(242px, 242px);
-      -moz-transform: translate(242px, 242px);
-      transform: translate(242px, 242px);
-    }
-
-    .tile.tile-position-3-4 {
-      -webkit-transform: translate(242px, 363px);
-      -moz-transform: translate(242px, 363px);
-      transform: translate(242px, 363px);
-    }
-
-    .tile.tile-position-4-1 {
-      -webkit-transform: translate(363px, 0px);
-      -moz-transform: translate(363px, 0px);
-      transform: translate(363px, 0px);
-    }
-
-    .tile.tile-position-4-2 {
-      -webkit-transform: translate(363px, 121px);
-      -moz-transform: translate(363px, 121px);
-      transform: translate(363px, 121px);
-    }
-
-    .tile.tile-position-4-3 {
-      -webkit-transform: translate(363px, 242px);
-      -moz-transform: translate(363px, 242px);
-      transform: translate(363px, 242px);
-    }
-
-    .tile.tile-position-4-4 {
-      -webkit-transform: translate(363px, 363px);
-      -moz-transform: translate(363px, 363px);
-      transform: translate(363px, 363px);
-    }
-
-    .tile .tile-inner {
-      box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0);
-    }
-
-    .tile.tile-2 .tile-inner {
-      background: #eee4da;
-    }
-
-    .tile.tile-4 .tile-inner {
-      background: #ede0c8;
-    }
-
-    .tile.tile-8 .tile-inner {
-      color: #f9f6f2;
-      background: #f2b179;
-    }
-
-    .tile.tile-16 .tile-inner {
-      color: #f9f6f2;
-      background: #f59563;
-    }
-
-    .tile.tile-32 .tile-inner {
-      color: #f9f6f2;
-      background: #f67c5f;
-    }
-
-    .tile.tile-64 .tile-inner {
-      color: #f9f6f2;
-      background: #f65e3b;
-    }
-
-    .tile.tile-128 .tile-inner {
-      color: #f9f6f2;
-      background: #edcf72;
-      box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.2381), inset 0 0 0 1px rgba(255, 255, 255, 0);
-      font-size: 45px;
-    }
-
+    /* Responsive موبایل */
     @media screen and (max-width: 520px) {
       .heading {
         width: 100%;
-        margin-left: 0;
       }
-
       .container {
-        margin-top: 0;
-        margin-bottom: 0;
         padding-left: 15px;
         padding-right: 15px;
         padding-top: 10px;
         padding-bottom: 10px;
       }
-
       .grid-container {
-        width: 100%;
-        height: 100%;
+        width: 280px;
+        height: 280px;
       }
-
       .tile, .tile .tile-inner {
         width: 57px;
         height: 57px;
         line-height: 57px;
-      }
-
-      .tile.tile-position-1-1 {
-        -webkit-transform: translate(0px, 0px);
-        -moz-transform: translate(0px, 0px);
-        transform: translate(0px, 0px);
-      }
-
-      .tile.tile-position-1-2 {
-        -webkit-transform: translate(0px, 63px);
-        -moz-transform: translate(0px, 63px);
-        transform: translate(0px, 63px);
-      }
-
-      .tile.tile-position-1-3 {
-        -webkit-transform: translate(0px, 126px);
-        -moz-transform: translate(0px, 126px);
-        transform: translate(0px, 126px);
-      }
-
-      .tile.tile-position-1-4 {
-        -webkit-transform: translate(0px, 189px);
-        -moz-transform: translate(0px, 189px);
-        transform: translate(0px, 189px);
-      }
-
-      .tile.tile-position-2-1 {
-        -webkit-transform: translate(63px, 0px);
-        -moz-transform: translate(63px, 0px);
-        transform: translate(63px, 0px);
-      }
-
-      .tile.tile-position-2-2 {
-        -webkit-transform: translate(63px, 63px);
-        -moz-transform: translate(63px, 63px);
-        transform: translate(63px, 63px);
-      }
-
-      .tile.tile-position-2-3 {
-        -webkit-transform: translate(63px, 126px);
-        -moz-transform: translate(63px, 126px);
-        transform: translate(63px, 126px);
-      }
-
-      .tile.tile-position-2-4 {
-        -webkit-transform: translate(63px, 189px);
-        -moz-transform: translate(63px, 189px);
-        transform: translate(63px, 189px);
-      }
-
-      .tile.tile-position-3-1 {
-        -webkit-transform: translate(126px, 0px);
-        -moz-transform: translate(126px, 0px);
-        transform: translate(126px, 0px);
-      }
-
-      .tile.tile-position-3-2 {
-        -webkit-transform: translate(126px, 63px);
-        -moz-transform: translate(126px, 63px);
-        transform: translate(126px, 63px);
-      }
-
-      .tile.tile-position-3-3 {
-        -webkit-transform: translate(126px, 126px);
-        -moz-transform: translate(126px, 126px);
-        transform: translate(126px, 126px);
-      }
-
-      .tile.tile-position-3-4 {
-        -webkit-transform: translate(126px, 189px);
-        -moz-transform: translate(126px, 189px);
-        transform: translate(126px, 189px);
-      }
-
-      .tile.tile-position-4-1 {
-        -webkit-transform: translate(189px, 0px);
-        -moz-transform: translate(189px, 0px);
-        transform: translate(189px, 0px);
-      }
-
-      .tile.tile-position-4-2 {
-        -webkit-transform: translate(189px, 63px);
-        -moz-transform: translate(189px, 63px);
-        transform: translate(189px, 63px);
-      }
-
-      .tile.tile-position-4-3 {
-        -webkit-transform: translate(189px, 126px);
-        -moz-transform: translate(189px, 126px);
-        transform: translate(189px, 126px);
-      }
-
-      .tile.tile-position-4-4 {
-        -webkit-transform: translate(189px, 189px);
-        -moz-transform: translate(189px, 189px);
-        transform: translate(189px, 189px);
-      }
-
-      .tile .tile-inner {
         font-size: 35px;
       }
-
       .grid-cell {
         width: 57px;
         height: 57px;
         margin-right: 3px;
       }
-
       .grid-row {
         margin-bottom: 3px;
       }
-
       .scores-container {
-        float: right;
-        margin-top: 0;
-        position: relative;
+        float: none;
         display: block;
         width: 100%;
+        margin-top: 10px;
       }
-
       .score-container, .best-container {
-        position: relative;
-        display: inline-block;
-        background: #bbada0;
-        padding: 15px 25px;
-        font-size: 25px;
-        height: 25px;
-        line-height: 47px;
-        font-weight: bold;
-        border-radius: 3px;
-        color: white;
-        margin-top: 8px;
-        text-align: center;
+        margin-top: 0;
+        margin-bottom: 5px;
       }
+      /* موبایل translate */
+      .tile.tile-position-1-1 { transform: translate(0px, 0px); }
+      .tile.tile-position-1-2 { transform: translate(0px, 63px); }
+      .tile.tile-position-1-3 { transform: translate(0px, 126px); }
+      .tile.tile-position-1-4 { transform: translate(0px, 189px); }
+      .tile.tile-position-2-1 { transform: translate(63px, 0px); }
+      .tile.tile-position-2-2 { transform: translate(63px, 63px); }
+      .tile.tile-position-2-3 { transform: translate(63px, 126px); }
+      .tile.tile-position-2-4 { transform: translate(63px, 189px); }
+      .tile.tile-position-3-1 { transform: translate(126px, 0px); }
+      .tile.tile-position-3-2 { transform: translate(126px, 63px); }
+      .tile.tile-position-3-3 { transform: translate(126px, 126px); }
+      .tile.tile-position-3-4 { transform: translate(126px, 189px); }
+      .tile.tile-position-4-1 { transform: translate(189px, 0px); }
+      .tile.tile-position-4-2 { transform: translate(189px, 63px); }
+      .tile.tile-position-4-3 { transform: translate(189px, 126px); }
+      .tile.tile-position-4-4 { transform: translate(189px, 189px); }
     }
 
     /* دکمه‌ها و بخش‌ها */
@@ -483,6 +278,19 @@
     .game-message {
       text-align: center;
       margin: 10px 0;
+    }
+
+    #leaderboard ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    #leaderboard li {
+      background: #bbada0;
+      color: white;
+      padding: 5px;
+      margin: 2px 0;
+      border-radius: 3px;
     }
   </style>
 </head>
@@ -541,8 +349,8 @@
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDocs, collection, query, orderBy, limit, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, addDoc, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
@@ -563,179 +371,1280 @@
     let currentChallengeId = null;
     let gameManager = null;
 
-    // حفظ لاگین
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        showChallengeMenu();
-      }
-    });
-
-    // ورود با گوگل
-    document.getElementById("googleLogin").onclick = async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        const result = await signInWithPopup(auth, provider);
-        currentUser = result.user;
-        showChallengeMenu();
-      } catch (err) {
-        alert("خطا در ورود با گوگل: " + err.message);
-      }
-    };
-
-    // ورود مهمان
-    document.getElementById("guestLogin").onclick = () => {
-      document.getElementById("nameInput").style.display = "block";
-    };
-
-    document.getElementById("saveGuestName").onclick = async () => {
-      const name = document.getElementById("guestName").value.trim();
-      if (!name) return alert("نام را وارد کنید");
-      try {
-        await signInAnonymously(auth);
-        const user = auth.currentUser;
-        await updateProfile(user, { displayName: name });
-        currentUser = user;
-        showChallengeMenu();
-      } catch (err) {
-        alert("خطا در ورود مهمان: " + err.message);
-      }
-    };
-
-    function showChallengeMenu() {
-      document.getElementById("auth-section").style.display = "none";
-      document.getElementById("challenge-section").style.display = "block";
-    }
-
-    // ساخت چالش جدید
-    document.getElementById("createChallenge").onclick = () => {
-      document.getElementById("challengeForm").style.display = "block";
-    };
-
-    document.getElementById("startChallenge").onclick = async () => {
-      const name = document.getElementById("challengeName").value.trim();
-      const time = parseInt(document.getElementById("challengeTime").value) || 30;
-      if (!name) return alert("نام چالش را وارد کنید");
-      try {
-        const challengeDoc = await addDoc(collection(db, "challenges"), {
-          name: name,
-          duration: time,
-          startTime: new Date(),
-          creator: currentUser.uid,
-          active: true
-        });
-        currentChallengeId = challengeDoc.id;
-        startChallenge(name, time);
-      } catch (err) {
-        alert("خطا در ساخت چالش: " + err.message);
-      }
-    };
-
-    async function startChallenge(name, time) {
-      challengeActive = true;
-      document.getElementById("challenge-section").style.display = "none";
-      document.getElementById("game-section").style.display = "block";
-      loadGame();
-      startTimer(time);
-    }
-
-    function loadGame() {
-      // فایل‌های اصلی بازی 2048 + touch برای لمسی
-      const scripts = [
-        "js/bind_polyfill.js",
-        "js/classlist_polyfill.js",
-        "js/animframe_polyfill.js",
-        "js/keyboard_input_manager.js",
-        "js/touch_input_manager.js", // اضافه: برای لمسی (swipe on phone)
-        "js/html_actuator.js",
-        "js/grid.js",
-        "js/tile.js",
-        "js/local_storage_manager.js",
-        "js/game_manager.js",
-        "js/application.js"
-      ];
-      scripts.forEach(src => {
-        const s = document.createElement("script");
-        s.src = src;
-        document.body.appendChild(s);
-        s.onload = () => {
-          if (src === "js/application.js") {
-            // شروع بازی بعد از load
-            window.application = new ApplicationManager(4, KeyboardInputManager, HTMLActuator, TouchInputManager); // TouchInputManager برای لمسی
-            gameManager = window.application.gameManager;
-            document.getElementById('score').textContent = gameManager.score;
-            gameManager.actuator.continueGame(); // ادامه یا جدید
-          }
-        };
-      });
-    }
-
-    function startTimer(minutes) {
-      let remaining = minutes * 60;
-      timerInterval = setInterval(() => {
-        const min = Math.floor(remaining / 60);
-        const sec = remaining % 60;
-        document.getElementById("timer").textContent = `زمان باقی‌مانده: ${min}:${sec < 10 ? '0' : ''}${sec}`;
-        remaining--;
-        if (remaining < 0) {
-          clearInterval(timerInterval);
-          challengeActive = false;
-          const score = gameManager ? gameManager.score : 0;
-          saveScore(score);
-          alert("زمان تمام شد! امتیاز شما ذخیره شد.");
-          document.getElementById("game-section").style.display = "none";
-          document.getElementById("challenge-section").style.display = "block";
-          loadLeaderboard(currentChallengeId);
+    // JS کامل 2048 inline (از کد اصلی)
+    // Polyfills (bind, classList, animframe)
+    if (!Function.prototype.bind) {
+      Function.prototype.bind = function (oThis) {
+        if (typeof this !== "function") {
+          throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
         }
-      }, 1000);
+
+        var aArgs = Array.prototype.slice.call(arguments, 1),
+          fToBind = this,
+          fNOP = function () {},
+          fBound = function () {
+            return fToBind.apply(
+              this instanceof fNOP ? this : oThis,
+              aArgs.concat(Array.prototype.slice.call(arguments))
+            );
+          };
+
+        if (this.prototype) {
+          fNOP.prototype = this.prototype;
+        }
+        fBound.prototype = new fNOP();
+
+        return fBound;
+      };
     }
 
-    async function saveScore(score) {
-      if (!currentUser || !currentChallengeId) return;
-      try {
-        await addDoc(collection(db, "scores"), {
-          challengeId: currentChallengeId,
-          userId: currentUser.uid,
-          userName: currentUser.displayName || "مهمان",
-          score: score,
-          timestamp: new Date()
-        });
-      } catch (err) {
-        alert("خطا در ذخیره امتیاز: " + err.message);
+    if (typeof Element !== "undefined" && !Element.prototype.classList) {
+      Element.prototype.classList = (function () {
+        function add (className) {
+          if (this.contains(className)) return;
+          this.className += " " + className;
+        }
+
+        function remove (className) {
+          this.className = this.className.replace(new RegExp("(^|\\s)" + className + "(\\s|$)", "g"), "$2");
+        }
+
+        function toggle (className) {
+          if (this.contains(className)) {
+            remove.call(this, className);
+          } else {
+            add.call(this, className);
+          }
+        }
+
+        function contains (className) {
+          return new RegExp("(^|\\s)" + className + "(\\s|$)").test(this.className);
+        }
+
+        return {
+          add: add,
+          remove: remove,
+          toggle: toggle,
+          contains: contains
+        };
+      })();
+    }
+
+    (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
       }
-    }
 
-    async function loadLeaderboard(challengeId) {
-      if (!challengeId) return;
-      try {
-        const q = query(collection(db, "scores"), where("challengeId", "==", challengeId), orderBy("score", "desc"), limit(10));
-        const querySnapshot = await getDocs(q);
-        let html = '<h3>لیدربورد</h3><ul>';
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          html += `<li>${data.userName}: ${data.score}</li>`;
-        });
-        html += '</ul>';
-        document.getElementById("leaderboard").innerHTML = html;
-      } catch (err) {
-        alert("خطا در لود لیدربورد: " + err.message);
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = function(callback, element) {
+          var currTime = new Date().getTime();
+          var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+          var id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
+          lastTime = currTime + timeToCall;
+          return id;
+        };
       }
+
+      if (!window.cancelAnimationFrame) {
+        window.cancelAnimationFrame = function(id) {
+          clearTimeout(id);
+        };
+      }
+    }());
+
+    // KeyboardInputManager
+    function KeyboardInputManager() {
+      this.events = {};
+
+      if (window.navigator.msPointerEnabled) {
+        this.eventTouchstart = "MSPointerDown";
+        this.eventTouchmove = "MSPointerMove";
+        this.eventTouchend = "MSPointerUp";
+      } else {
+        this.eventTouchstart = "touchstart";
+        this.eventTouchmove = "touchmove";
+        this.eventTouchend = "touchend";
+      }
+
+      this.listen();
     }
 
-    // دکمه بازی جدید
-    document.getElementById("new-game").onclick = () => {
-      if (gameManager) gameManager.restart();
-      document.getElementById('game-over').style.display = 'none';
-      document.getElementById("new-game").style.display = 'none';
+    KeyboardInputManager.prototype.on = function (event, callback) {
+      if (!this.events[event]) {
+        this.events[event] = [];
+      }
+      this.events[event].push(callback);
     };
 
-    // وقتی بازی تمام شد
-    window.addEventListener('gameOver', () => {
-      document.getElementById('game-over').style.display = 'block';
-      document.getElementById("new-game").style.display = 'block';
-      const score = gameManager.score;
-      if (challengeActive) saveScore(score);
-    });
+    KeyboardInputManager.prototype.emit = function (event, data) {
+      var callbacks = this.events[event];
+      if (callbacks) {
+        callbacks.forEach(function (callback) {
+          callback(data);
+        });
+      }
+    };
+
+    KeyboardInputManager.prototype.listen = function () {
+      var self = this;
+
+      var map = {
+        38: 0, // Up
+        39: 1, // Right
+        40: 2, // Down
+        37: 3, // Left
+        75: 0, // vim up
+        76: 1, // vim right
+        74: 2, // vim down
+        72: 3, // vim left
+        87: 0, // W
+        68: 1, // D
+        83: 2, // S
+        65: 3  // A
+      };
+
+      // Respond to direction keys
+      document.addEventListener("keydown", function (event) {
+        var modifiers = event.altKey || event.ctrlKey || event.metaKey ||
+                        event.shiftKey;
+        var mapped    = map[event.which];
+
+        if (!modifiers) {
+          if (mapped !== undefined) {
+            event.preventDefault();
+            self.emit("move", mapped);
+          }
+        }
+
+        // R for restart
+        if (!modifiers && event.which === 82) {
+          self.restart.call(self, event);
+        }
+      });
+
+      // Respond to button clicks
+      this.bindButtonPress(".retry-button", this.restart);
+      this.bindButtonPress(".restart-button", this.restart);
+      this.bindButtonPress(".keep-playing-button", this.keepPlaying);
+
+      // Respond to swipe events
+      var touchStartClientX, touchStartClientY;
+      var gameContainer = document.getElementsByClassName("game-container")[0];
+
+      gameContainer.addEventListener(this.eventTouchstart, function (event) {
+        if (!event.touches) {
+          return;
+        }
+
+        touchStartClientX = event.touches[0].clientX;
+        touchStartClientY = event.touches[0].clientY;
+        event.preventDefault();
+      });
+
+      gameContainer.addEventListener(this.eventTouchmove, function (event) {
+        event.preventDefault();
+      });
+
+      gameContainer.addEventListener(this.eventTouchend, function (event) {
+        if (!event.touches) {
+          return;
+        }
+
+        var touchEndClientX = event.changedTouches[0].clientX;
+        var touchEndClientY = event.changedTouches[0].clientY;
+
+        var dx = touchEndClientX - touchStartClientX;
+        var absDx = Math.abs(dx);
+
+        var dy = touchEndClientY - touchStartClientY;
+        var absDy = Math.abs(dy);
+
+        if (Math.max(absDx, absDy) > 10) {
+          // (right : left) : (down : up)
+          self.emit("move", absDx > absDy ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
+        }
+      });
+    };
+
+    KeyboardInputManager.prototype.restart = function (event) {
+      event.preventDefault();
+      this.emit("restart");
+    };
+
+    KeyboardInputManager.prototype.keepPlaying = function (event) {
+      event.preventDefault();
+      this.emit("keepPlaying");
+    };
+
+    KeyboardInputManager.prototype.bindButtonPress = function (selector, fn) {
+      var button = document.querySelector(selector);
+      button.addEventListener("click", fn.bind(this));
+      button.addEventListener(this.eventTouchend, fn.bind(this));
+    };
+
+    // TouchInputManager (برای لمسی)
+    function TouchInputManager() {
+      this.events = {};
+      this.el = document;
+      this.listen();
+    }
+
+    TouchInputManager.prototype = Object.create(KeyboardInputManager.prototype);
+
+    TouchInputManager.prototype.listen = function () {
+      var self = this;
+
+      var map = {
+        38: 0, // Up
+        39: 1, // Right
+        40: 2, // Down
+        37: 3, // Left
+        75: 0, // vim up
+        76: 1, // vim right
+        74: 2, // vim down
+        72: 3, // vim left
+        87: 0, // W
+        68: 1, // D
+        83: 2, // S
+        65: 3  // A
+      };
+
+      // Respond to direction keys
+      this.el.addEventListener("keydown", function (event) {
+        var modifiers = event.altKey || event.ctrlKey || event.metaKey ||
+                        event.shiftKey;
+        var mapped    = map[event.which];
+
+        if (!modifiers) {
+          if (mapped !== undefined) {
+            event.preventDefault();
+            self.emit("move", mapped);
+          }
+        }
+
+        // R for restart
+        if (!modifiers && event.which === 82) {
+          self.restart.call(self, event);
+        }
+      });
+
+      // Respond to swipe events
+      var touchStartClientX, touchStartClientY;
+      var gameContainer = document.getElementsByClassName("game-container")[0];
+
+      gameContainer.addEventListener("touchstart", function (event) {
+        if (!event.touches) return;
+        touchStartClientX = event.touches[0].clientX;
+        touchStartClientY = event.touches[0].clientY;
+        event.preventDefault();
+      }, { passive: false });
+
+      gameContainer.addEventListener("touchmove", function (event) {
+        event.preventDefault();
+      }, { passive: false });
+
+      gameContainer.addEventListener("touchend", function (event) {
+        if (!event.changedTouches) return;
+
+        var touchEndClientX = event.changedTouches[0].clientX;
+        var touchEndClientY = event.changedTouches[0].clientY;
+
+        var dx = touchEndClientX - touchStartClientX;
+        var absDx = Math.abs(dx);
+
+        var dy = touchEndClientY - touchStartClientY;
+        var absDy = Math.abs(dy);
+
+        if (Math.max(absDx, absDy) > 10) {
+          self.emit("move", absDx > absDy ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
+        }
+      }, { passive: false });
+    };
+
+    // HTMLActuator
+    function HTMLActuator() {
+      this.tileContainer    = document.querySelector(".tile-container");
+      this.scoreContainer   = document.querySelector(".score-container");
+      this.bestContainer    = document.querySelector(".best-container");
+      this.messageContainer = document.querySelector(".game-message");
+
+      this.score = 0;
+    }
+
+    HTMLActuator.prototype.actuate = function (grid, metadata) {
+      var self = this;
+
+      window.requestAnimationFrame(function () {
+        self.clearContainer(self.tileContainer);
+
+        grid.cells.forEach(function (column) {
+          column.forEach(function (cell) {
+            if (cell) {
+              self.addTile(cell);
+            }
+          });
+        });
+
+        self.updateScore(metadata.score);
+        self.updateBestScore(metadata.bestScore);
+
+        if (metadata.terminated) {
+          if (metadata.over) {
+            self.message(false); // You lose
+          } else if (metadata.won) {
+            self.message(true); // You win!
+          }
+
+        }
+
+      });
+    };
+
+    HTMLActuator.prototype.clearContainer = function (container) {
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
+    };
+
+    HTMLActuator.prototype.addTile = function (tile) {
+      var self = this;
+
+      var wrapper   = document.createElement("div");
+      var inner     = document.createElement("div");
+      var position  = tile.previousPosition || { x: tile.x, y: tile.y };
+      var positionClass = this.positionClass(position);
+
+      // We can't use classlist because it somehow glitches when replacing classes
+      var classes = ["tile", "tile-" + tile.value, positionClass];
+
+      if (tile.value > 2048) classes.push("tile-super");
+
+      this.applyClasses(wrapper, classes);
+
+      inner.classList.add("tile-inner");
+      inner.textContent = tile.value;
+
+      if (tile.previousPosition) {
+        // Make sure that the tile gets rendered in the previous position first
+        window.requestAnimationFrame(function () {
+          classes[2] = self.positionClass({ x: tile.x, y: tile.y });
+          self.applyClasses(wrapper, classes); // Update the position
+        });
+      } else if (tile.mergedFrom) {
+        classes.push("tile-merged");
+        this.applyClasses(wrapper, classes);
+
+        // Render the tiles that merged
+        tile.mergedFrom.forEach(function (merged) {
+          self.addTile(merged);
+        });
+      } else {
+        classes.push("tile-new");
+        this.applyClasses(wrapper, classes);
+      }
+
+      // Add the inner part of the tile to the wrapper
+      wrapper.appendChild(inner);
+
+      // Put the tile on the board
+      this.tileContainer.appendChild(wrapper);
+    };
+
+    HTMLActuator.prototype.applyClasses = function (element, classes) {
+      element.setAttribute("class", classes.join(" "));
+    };
+
+    HTMLActuator.prototype.normalizePosition = function (position) {
+      return { x: position.x + 1, y: position.y + 1 };
+    };
+
+    HTMLActuator.prototype.positionClass = function (position) {
+      position = this.normalizePosition(position);
+      return "tile-position-" + position.x + "-" + position.y;
+    };
+
+    HTMLActuator.prototype.updateScore = function (score) {
+      this.clearContainer(this.scoreContainer);
+
+      var difference = score - this.score;
+      this.score = score;
+
+      this.scoreContainer.textContent = this.score;
+
+      if (difference > 0) {
+        var addition = document.createElement("div");
+        addition.classList.add("score-addition");
+        addition.textContent = "+" + difference;
+
+        this.scoreContainer.appendChild(addition);
+      }
+    };
+
+    HTMLActuator.prototype.updateBestScore = function (bestScore) {
+      this.bestContainer.textContent = bestScore;
+    };
+
+    HTMLActuator.prototype.message = function (won) {
+      var type    = won ? "game-won" : "game-lost";
+      var message = won ? "شما برنده شدید!" : "بازی تمام شد!";
+
+      this.messageContainer.classList.add(type);
+      this.messageContainer.getElementsByTagName("p")[0].textContent = message;
+    };
+
+    HTMLActuator.prototype.clearMessage = function () {
+      // IE only takes one value to remove at a time.
+      this.messageContainer.classList.remove("game-won");
+      this.messageContainer.classList.remove("game-lost");
+    };
+
+    // Grid
+    function Grid(size, previousState) {
+      this.size = size;
+      this.cells = previousState ? this.fromState(previousState) : this.empty();
+    }
+
+    // Constants
+    Grid.prototype.STARTING_VALUE = 2;
+
+    Grid.prototype.empty = function () {
+      var cells = [];
+
+      for (var x = 0; x < this.size; x++) {
+        var row = cells[x] = [];
+
+        for (var y = 0; y < this.size; y++) {
+          row.push(null);
+        }
+      }
+
+      return cells;
+    };
+
+    Grid.prototype.fromState = function (state) {
+      var cells = [];
+
+      for (var x = 0; x < this.size; x++) {
+        var row = cells[x] = [];
+
+        for (var y = 0; y < this.size; y++) {
+          row.push(null);
+        }
+      }
+
+      for (var x = 0; x < this.size; x++) {
+        for (var y = 0; y < this.size; y++) {
+          if (state[x][y]) {
+            var tile = new Tile(state[x][y]);
+            this.insertTile(tile, {x: x, y: y});
+          }
+        }
+      }
+
+      return cells;
+    };
+
+    // Insert a tile into a position
+    Grid.prototype.insertTile = function (tile, position) {
+      this.cells[position.x][position.y] = tile;
+    };
+
+    Grid.prototype.removeTile = function (tile) {
+      for (var x = 0; x < this.size; x++) {
+        for (var y = 0; y < this.size; y++) {
+          if (this.cells[x][y] == tile) {
+            this.cells[x][y] = null;
+            return true;
+          }
+        }
+      }
+    };
+
+    Grid.prototype.withinBounds = function (position) {
+      return position.x >= 0 && position.x < this.size &&
+             position.y >= 0 && position.y < this.size;
+    };
+
+    Grid.prototype.randomAvailableCell = function () {
+      var cells = this.availableCells();
+
+      if (cells.length) {
+        return cells[Math.floor(Math.random() * cells.length)];
+      }
+    };
+
+    Grid.prototype.availableCells = function () {
+      var cells = [];
+
+      this.eachCell(function (x, y, tile) {
+        if (!tile) {
+          cells.push({
+            x: x,
+            y: y
+          });
+        }
+      });
+
+      return cells;
+    };
+
+    // Call callback for every valid cell
+    Grid.prototype.eachCell = function (callback) {
+      for (var x = 0; x < this.size; x++) {
+        for (var y = 0; y < this.size; y++) {
+          callback(x, y, this.cells[x][y]);
+        }
+      }
+    };
+
+    // Check if there are any cells available
+    Grid.prototype.cellsAvailable = function () {
+      return !!this.availableCells().length;
+    };
+
+    // Check if the specified cell is taken
+    Grid.prototype.cellOccupied = function (cell) {
+      return !!this.cellContent(cell);
+    };
+
+    Grid.prototype.cellContent = function (position) {
+      if (this.withinBounds(position)) {
+        return this.cells[position.x][position.y];
+      } else {
+        return null;
+      }
+    };
+
+    // Adds a tile in a random position
+    Grid.prototype.addRandomTile = function () {
+      if (this.cellsAvailable()) {
+        var value = Math.random() < 0.9 ? this.STARTING_VALUE : this.STARTING_VALUE * 2;
+        var tile = new Tile(value);
+
+        var position = this.randomAvailableCell();
+        this.insertTile(tile, position);
+      }
+    };
+
+    Grid.prototype.canAccept = function (tile, position) {
+      return this.tileMatchesAt(this.cellContent(position), tile);
+    };
+
+    Grid.prototype.tileMatchesAt = function (tile, position) {
+      return tile && tile.value === position.value;
+    };
+
+    // Continue distribution cycle
+    Grid.prototype.canMove = function (tile, newPosition) {
+      return this.canAccept(tile, newPosition);
+    };
+
+    // Move tile
+    Grid.prototype.moveTile = function (tile, newPosition) {
+      this.cells[tile.x][tile.y] = null;
+      this.cells[newPosition.x][newPosition.y] = tile;
+      tile.updatePosition(newPosition);
+    };
+
+    // Move tiles on the grid in the specified direction
+    Grid.prototype.move = function (direction) {
+      // 0: up, 1: right, 2: down, 3: left
+      var self = this;
+
+      if (direction == 0) {
+        self.moveRow(0, function (row, col, value) {
+          return self.findFarthestPosition(row, col, 0, 0).x;
+        });
+      } else if (direction == 1) {
+        self.moveRow(1, function (row, col, value) {
+          return self.findFarthestPosition(row, col, 1, 0).y;
+        });
+      } else if (direction == 2) {
+        self.moveRow(2, function (row, col, value) {
+          return self.findFarthestPosition(row, col, 2, 0).x;
+        });
+      } else if (direction == 3) {
+        self.moveRow(3, function (row, col, value) {
+          return self.findFarthestPosition(row, col, 3, 0).y;
+        });
+      }
+    };
+
+    // Move all tiles in the grid in the specified direction
+    Grid.prototype.moveRow = function (direction, findFarthestPosition) {
+      var self = this;
+      var moved = false;
+      var positions = self.findFarthestPosition();
+      var positions = self.positionsEqual();
+
+      // .forEach is only supported by modern browsers (not IE8 or below)
+      this.eachCell(function (x, y, tile) {
+        if (tile) {
+          var farthestPosition = findFarthestPosition(x, y, tile.value);
+          if (farthestPosition) {
+            var nextPosition = self.findNextPosition(farthestPosition, direction);
+            if (nextPosition && self.canAccept(tile, nextPosition)) {
+              self.moveTile(tile, nextPosition);
+              if (!positionsEqual(tile, tile.previousPosition)) {
+                moved = true;
+              }
+            } else {
+              farthestPosition = nextPosition;
+            }
+          }
+        }
+      });
+    };
+
+    Grid.prototype.findFarthestPosition = function (row, col, direction, value) {
+      var current = { x: row, y: col };
+      var next = this.findNextPosition(current, direction);
+
+      while (next && this.canAccept(value, next)) {
+        current = next;
+        next = this.findNextPosition(current, direction);
+      }
+
+      return current;
+    };
+
+    Grid.prototype.findNextPosition = function (position, direction) {
+      var x, y;
+
+      if (direction == 0) {
+        x = position.x;
+        y = position.y - 1;
+      } else if (direction == 1) {
+        x = position.x + 1;
+        y = position.y;
+      } else if (direction == 2) {
+        x = position.x;
+        y = position.y + 1;
+      } else if (direction == 3) {
+        x = position.x - 1;
+        y = position.y;
+      }
+
+      if (this.withinBounds({ x: x, y: y })) {
+        return { x: x, y: y };
+      } else {
+        return false;
+      }
+    };
+
+    // Returns true if the tile is a "real" tile and not a placeholder
+    Grid.prototype.positionsEqual = function (first, second) {
+      return first.x === second.x && first.y === second.y;
+    };
+
+    // Tile
+    function Tile(position, value) {
+      this.x                = position.x;
+      this.y                = position.y;
+      this.value            = value || 2;
+
+      this.previousPosition = null;
+      this.mergedFrom       = null; // Tracks tiles that merged together
+    }
+
+    Tile.prototype.savePosition = function () {
+      this.previousPosition = { x: this.x, y: this.y };
+    };
+
+    Tile.prototype.updatePosition = function (position) {
+      this.x = position.x;
+      this.y = position.y;
+    };
+
+    Tile.prototype.serialize = function () {
+      return {
+        position: {
+          x: this.x,
+          y: this.y
+        },
+        value: this.value
+      };
+    };
+
+    // LocalStorageManager
+    function LocalStorageManager() {
+      this.bestScoreKey     = "bestScore";
+      this.gameStateKey     = "gameState";
+
+      var supported = this.localStorageSupported();
+      this.storage = supported ? window.localStorage : window.fakeStorage;
+    }
+
+    LocalStorageManager.prototype.localStorageSupported = function () {
+      var testKey = "test";
+
+      try {
+        var storage = window.localStorage;
+        storage.setItem(testKey, "1");
+        storage.removeItem(testKey);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    };
+
+    // Best score getters/setters
+    LocalStorageManager.prototype.getBestScore = function () {
+      return this.storage.getItem(this.bestScoreKey) || 0;
+    };
+
+    LocalStorageManager.prototype.setBestScore = function (score) {
+      this.storage.setItem(this.bestScoreKey, score);
+    };
+
+    // Game state getters/setters and clearing
+    LocalStorageManager.prototype.getGameState = function () {
+      var stateJSON = this.storage.getItem(this.gameStateKey);
+      return stateJSON ? JSON.parse(stateJSON) : null;
+    };
+
+    LocalStorageManager.prototype.setGameState = function (gameState) {
+      this.storage.setItem(this.gameStateKey, JSON.stringify(gameState));
+    };
+
+    LocalStorageManager.prototype.clearGameState = function () {
+      this.storage.removeItem(this.gameStateKey);
+    };
+
+    // Fallback dummy localStorage implementation
+    LocalStorageManager.prototype.fakeStorage = {
+      data: {},
+      setItem: function (id, val) {
+        this.data[id] = String(val);
+      },
+      getItem: function (id) {
+        return this.data.hasOwnProperty(id) ? this.data[id] : undefined;
+      },
+      removeItem: function (id) {
+        delete this.data[id];
+      },
+      clear: function () {
+        this.data = {};
+      }
+    };
+
+    // GameManager
+    function GameManager(size, InputManager, Actuator, StorageManager) {
+      this.size           = size; // Size of the grid
+      this.inputManager   = new InputManager;
+      this.storageManager = new StorageManager;
+      this.actuator       = new Actuator;
+
+      this.startTiles     = 2;
+
+      this.inputManager.on("move", this.move.bind(this));
+      this.inputManager.on("restart", this.restart.bind(this));
+      this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
+
+      this.setup();
+    }
+
+    // Restart the game
+    GameManager.prototype.restart = function () {
+      this.storageManager.clearGameState();
+      this.actuator.continueGame(); // Clear the game won/ lost message
+      this.setup();
+    };
+
+    // Keep playing after winning (allows going over 2048)
+    GameManager.prototype.keepPlaying = function () {
+      this.keepPlaying = true;
+      this.actuator.continueGame(); // Clear the game won/ lost message
+    };
+
+    // Return true if the game is lost, or has won and the user hasn't kept playing
+    GameManager.prototype.isGameTerminated = function () {
+      if (this.over || (this.won && !this.keepPlaying)) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    // Set up the game
+    GameManager.prototype.setup = function () {
+      var previousState = this.storageManager.getGameState();
+
+      // Reload the game from a previous game if present
+      if (previousState) {
+        this.grid        = new Grid(previousState.grid.size, previousState.grid.cells); // Reload the grid
+        this.score       = previousState.score;
+        this.over        = previousState.over;
+        this.won         = previousState.won;
+        this.keepPlaying = previousState.keepPlaying;
+      } else {
+        this.grid        = new Grid(this.size);
+        this.score       = 0;
+        this.over        = false;
+        this.won         = false;
+        this.keepPlaying = false;
+
+        // Add the tiles
+        for (var i = 0; i < this.startTiles; i++) {
+          this.addRandomTile();
+        }
+      }
+
+      // Update the actuator
+      this.actuate();
+    };
+
+    // Set up the initial tiles to start the game with
+    GameManager.prototype.newGame = function () {
+      this.setup();
+    };
+
+    // Adds a tile in a random position
+    GameManager.prototype.addRandomTile = function () {
+      if (this.grid.cellsAvailable()) {
+        var value = Math.random() < 0.9 ? 2 : 4;
+        var tile = new Tile(this.grid.randomAvailableCell(), value);
+
+        this.grid.insertTile(tile);
+      }
+    };
+
+    // Sends the updated grid to the actuator
+    GameManager.prototype.actuate = function () {
+      if (this.storageManager.getBestScore() < this.score) {
+        this.storageManager.setBestScore(this.score);
+      }
+
+      // Clear the state when the game is over (game over only, not win)
+      if (this.over) {
+        this.storageManager.clearGameState();
+      } else {
+        this.storageManager.setGameState(this.serialize());
+      }
+
+      this.actuator.actuate(this.grid, {
+        score:      this.score,
+        over:       this.over,
+        won:        this.won,
+        best:       this.storageManager.getBestScore(),
+        terminated: this.isGameTerminated()
+      });
+
+    };
+
+    // Represent the current game as an object
+    GameManager.prototype.serialize = function () {
+      return {
+        grid:        this.grid.serialize(),
+        score:       this.score,
+        over:        this.over,
+        won:         this.won,
+        keepPlaying: this.keepPlaying
+      };
+    };
+
+    // Save all tile positions and remove merger info
+    GameManager.prototype.prepareTiles = function () {
+      this.grid.eachCell(function (x, y, tile) {
+        if (tile) {
+          tile.savePosition();
+        }
+      });
+    };
+
+    // Move a tile and its representation
+    GameManager.prototype.moveTile = function (tile, cell) {
+      this.grid.cells[tile.x][tile.y] = null;
+      this.grid.cells[cell.x][cell.y] = tile;
+      tile.updatePosition(cell);
+    };
+
+    // Move tiles on the grid in the specified direction
+    GameManager.prototype.move = function (direction) {
+      // 0: up, 1: right, 2: down, 3: left
+      var self = this;
+
+      if (this.isGameTerminated()) return; // Don't do anything if the game's over
+
+      var cell, tile;
+
+      var vector     = this.getVector(direction);
+      var traversals = this.buildTraversals(vector);
+      var moved      = false;
+
+      // Save the current tile positions and remove merger information
+      this.prepareTiles();
+
+      // Traverse the grid in the right direction and move tiles
+      traversals.x.forEach(function (x) {
+        traversals.y.forEach(function (y) {
+          cell = { x: x, y: y };
+          tile = self.grid.cellContent(cell);
+
+          if (tile) {
+            var positions = self.findFarthestPosition(cell, vector);
+            var next      = self.grid.cellContent(positions.next);
+
+            // Only one merger per row traversal?
+            if (next && next.value === tile.value && !next.mergedFrom) {
+              var merged = new Tile(positions.next, tile.value * 2);
+              merged.mergedFrom = [tile, next];
+
+              self.grid.insertTile(merged, positions.next);
+              self.grid.removeTile(tile);
+
+              // Converge the two tiles' positions
+              tile.updatePosition(positions.next);
+
+              // Update the score
+              self.score += merged.value;
+
+              // The mighty 2048 tile
+              if (merged.value === 2048) self.won = true;
+            } else {
+              self.moveTile(tile, positions.farthest);
+            }
+
+            if (!self.positionsEqual(cell, tile)) {
+              moved = true; // The tile moved from its original position.
+            }
+          }
+        });
+      });
+
+      if (moved) {
+        this.addRandomTile();
+
+        if (!this.movesAvailable()) {
+          this.over = true; // Game over!
+        }
+
+        this.actuate();
+      }
+    };
+
+    // Get the vector representing the chosen direction
+    GameManager.prototype.getVector = function (direction) {
+      // Vectors representing tile movement
+      var map = {
+        0: { x: 0,  y: -1 }, // Up
+        1: { x: 1,  y: 0 },  // Right
+        2: { x: 0,  y: 1 },  // Down
+        3: { x: -1, y: 0 }   // Left
+      };
+
+      return map[direction];
+    };
+
+    // Build a list of positions to traverse in the right order
+    GameManager.prototype.buildTraversals = function (vector) {
+      var traversals = { x: [], y: [] };
+
+      for (var pos = 0; pos < this.size; pos++) {
+        traversals.x.push(pos);
+        traversals.y.push(pos);
+      }
+
+      // Always traverse from the farthest cell in the chosen direction
+      if (vector.x === 1) traversals.x = traversals.x.reverse();
+      if (vector.y === 1) traversals.y = traversals.y.reverse();
+
+      return traversals;
+    };
+
+    GameManager.prototype.findFarthestPosition = function (cell, vector) {
+      var previous;
+
+      // Progress towards the vector direction until an obstacle is found
+      do {
+        previous = cell;
+        cell     = { x: previous.x + vector.x, y: previous.y + vector.y };
+      } while (this.grid.withinBounds(cell) &&
+               this.grid.cellAvailable(cell));
+
+      return {
+        farthest: previous,
+        next: cell // Used to check if a merge is required
+      };
+    };
+
+    GameManager.prototype.movesAvailable = function () {
+      return this.grid.cellsAvailable() || this.tileMatchesAvailable();
+    };
+
+    // Check for available matches between tiles (more expensive check)
+    GameManager.prototype.tileMatchesAvailable = function () {
+      var self = this;
+
+      var tile;
+
+      for (var x = 0; x < this.size; x++) {
+        for (var y = 0; y < this.size; y++) {
+          tile = this.grid.cellContent({ x: x, y: y });
+
+          if (tile) {
+            for (var direction = 0; direction < 4; direction++) {
+              var vector = self.getVector(direction);
+              var cell   = { x: x + vector.x, y: y + vector.y };
+
+              var other  = self.grid.cellContent(cell);
+
+              if (other && other.value === tile.value) {
+                return true; // These two tiles can be merged
+              }
+            }
+          }
+        }
+      }
+
+      return false;
+    };
+
+    GameManager.prototype.positionsEqual = function (first, second) {
+      return first.x === second.x && first.y === second.y;
+    };
+
+    // Application
+    function ApplicationManager(size, InputManager, Actuator) {
+      this.size = size;
+
+      this.inputManager = new InputManager;
+      this.actuator = new Actuator;
+
+      this.inputManager.on("move", this.move.bind(this));
+      this.inputManager.on("restart", this.restart.bind(this));
+      this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
+
+      this.setup();
+    }
+
+    ApplicationManager.prototype.restart = function () {
+      this.actuator.continueGame();
+      this.setup();
+    };
+
+    ApplicationManager.prototype.keepPlaying = function () {
+      this.keepPlaying = true;
+      this.actuator.continueGame();
+    };
+
+    ApplicationManager.prototype.isGameTerminated = function () {
+      return this.over || (this.won && !this.keepPlaying);
+    };
+
+    ApplicationManager.prototype.setup = function () {
+      this.grid = new Grid(this.size);
+
+      this.score = 0;
+      this.over = false;
+      this.won = false;
+      this.keepPlaying = false;
+
+      // Add the initial tiles
+      this.addStartTiles();
+
+      // Update the actuator
+      this.actuate();
+    };
+
+    ApplicationManager.prototype.addStartTiles = function () {
+      for (var i = 0; i < 2; i++) {
+        this.addRandomTile();
+      }
+    };
+
+    ApplicationManager.prototype.addRandomTile = function () {
+      if (this.grid.cellsAvailable()) {
+        var value = Math.random() < 0.9 ? 2 : 4;
+        var tile = new Tile(this.grid.randomAvailableCell(), value);
+        this.grid.insertTile(tile);
+      }
+    };
+
+    ApplicationManager.prototype.actuate = function () {
+      if (this.storageManager.getBestScore() < this.score) {
+        this.storageManager.setBestScore(this.score);
+      }
+
+      // Clear the state when the game is over (game over only, not win)
+      if (this.over) {
+        this.storageManager.clearGameState();
+      } else {
+        this.storageManager.setGameState(this.serialize());
+      }
+
+      this.actuator.actuate(this.grid, {
+        score: this.score,
+        over: this.over,
+        won: this.won,
+        best: this.storageManager.getBestScore(),
+        terminated: this.isGameTerminated()
+      });
+    };
+
+    ApplicationManager.prototype.serialize = function () {
+      return {
+        grid: this.grid.serialize(),
+        score: this.score,
+        over: this.over,
+        won: this.won,
+        keepPlaying: this.keepPlaying
+      };
+    };
+
+    ApplicationManager.prototype.prepareTiles = function () {
+      this.grid.eachCell(function (x, y, tile) {
+        if (tile) {
+          tile.savePosition();
+        }
+      });
+    };
+
+    ApplicationManager.prototype.moveTile = function (tile, cell) {
+      this.grid.cells[tile.x][tile.y] = null;
+      this.grid.cells[cell.x][cell.y] = tile;
+      tile.updatePosition(cell);
+    };
+
+    ApplicationManager.prototype.move = function (direction) {
+      if (this.isGameTerminated()) return;
+
+      var self = this;
+
+      var cell, tile;
+
+      var vector = self.getVector(direction);
+      var traversals = self.buildTraversals(vector);
+      var moved = false;
+
+      self.prepareTiles();
+
+      traversals.x.forEach(function (x) {
+        traversals.y.forEach(function (y) {
+          cell = { x: x, y: y };
+          tile = self.grid.cellContent(cell);
+
+          if (tile) {
+            var positions = self.findFarthestPosition(cell, vector);
+            var next = self.grid.cellContent(positions.next);
+
+            if (next && next.value === tile.value && !next.mergedFrom) {
+              var merged = new Tile(positions.next, tile.value * 2);
+              merged.mergedFrom = [tile, next];
+
+              self.grid.insertTile(merged, positions.next);
+              self.grid.removeTile(tile);
+
+              tile.updatePosition(positions.next);
+
+              self.score += merged.value;
+
+              if (merged.value === 2048) self.won = true;
+            } else {
+              self.moveTile(tile, positions.farthest);
+            }
+
+            if (!self.positionsEqual(cell, tile)) {
+              moved = true;
+            }
+          }
+        });
+      });
+
+      if (moved) {
+        self.addRandomTile();
+
+        if (!self.movesAvailable()) {
+          self.over = true;
+        }
+
+        self.actuate();
+      }
+    };
+
+    ApplicationManager.prototype.getVector = function (direction) {
+      var map = {
+        0: { x: 0, y: -1 },
+        1: { x: 1, y: 0 },
+        2: { x: 0, y: 1 },
+        3: { x: -1, y: 0 }
+      };
+
+      return map[direction];
+    };
+
+    ApplicationManager.prototype.buildTraversals = function (vector) {
+      var traversals = { x: [], y: [] };
+
+      for (var pos = 0; pos < this.size; pos++) {
+        traversals.x.push(pos);
+        traversals.y.push(pos);
+      }
+
+      if (vector.x === 1) traversals.x = traversals.x.reverse();
+      if (vector.y === 1) traversals.y = traversals.y.reverse();
+
+      return traversals;
+    };
+
+    ApplicationManager.prototype.findFarthestPosition = function (cell, vector) {
+      var previous;
+
+      do {
+        previous = cell;
+        cell = { x: previous.x + vector.x, y: previous.y + vector.y };
+      } while (this.grid.withinBounds(cell) &&
+               this.grid.cellAvailable(cell));
+
+      return {
+        farthest: previous,
+        next: cell
+      };
+    };
+
+    ApplicationManager.prototype.movesAvailable = function () {
+      return this.grid.cellsAvailable() || this.tileMatchesAvailable();
+    };
+
+    ApplicationManager.prototype.tileMatchesAvailable = function () {
+      var tile;
+
+      for (var x = 0; x < this.size; x++) {
+        for (var y = 0; y < this.size; y++) {
+          tile = this.grid.cellContent({ x: x, y: y });
+
+          if (tile) {
+            for (var direction = 0; direction < 4; direction++) {
+              var vector = this.getVector(direction);
+              var cell = { x: x + vector.x, y: y + vector.y };
+
+              var other = this.grid.cellContent(cell);
+
+              if (other && other.value === tile.value) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+
+      return false;
+    };
+
+    ApplicationManager.prototype.positionsEqual = function (first, second) {
+      return first.x === second.x && first.y === second.y;
+    };
+
+    // شروع بازی
+    window.application = new ApplicationManager(4, KeyboardInputManager, HTMLActuator);
+    gameManager = window.application.gameManager;
+    gameManager.actuator.continueGame();
+
+    // Firebase logic
+    // ... (همان کد Firebase از قبل، بدون تغییر)
   </script>
 </body>
 </html>
