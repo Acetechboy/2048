@@ -1,177 +1,78 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <title>2048 چَلِنج</title>
-  <link href="style/main.css" rel="stylesheet" type="text/css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>2048 شخصی‌سازی‌شده</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 </head>
-<body dir="rtl">
-  <div class="container">
-    <div class="heading">
-      <h1 class="title">2048 چَلِنج</h1>
-      <div class="scores-container">
-        <div class="score-container">0</div>
-        <div class="best-container">0</div>
-      </div>
-    </div>
-
-    <div id="auth-section" style="text-align:center; margin: 20px;">
-      <button id="googleLogin">ورود با گوگل</button>
-      <button id="guestLogin">ورود به عنوان مهمان</button>
-      <div id="nameInput" style="display:none; margin-top:10px;">
-        <input id="guestName" placeholder="نام خود را وارد کنید">
-        <button id="saveGuestName">ادامه</button>
-      </div>
-    </div>
-
-    <div id="challenge-section" style="display:none; text-align:center;">
-      <button id="createChallenge">ساخت چالش جدید</button>
-      <div id="challengeForm" style="display:none; margin-top:10px;">
-        <input id="challengeName" placeholder="نام چالش">
-        <input id="challengeTime" type="number" placeholder="مدت (دقیقه)">
-        <button id="startChallenge">شروع</button>
-      </div>
-      <div id="leaderboard" style="margin-top:20px;"></div>
-    </div>
-
-    <div id="game-section" style="display:none;">
-      <div class="game-container">
-        <div class="grid-container">
-          <div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div><div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div><div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div><div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div>
+<body>
+    <!-- صفحه ورود -->
+    <div id="login-page" class="container">
+        <h1>به 2048 خوش آمدید!</h1>
+        <button id="guest-btn">ورود مهمان</button>
+        <button id="google-btn">ورود با گوگل</button>
+        <div id="guest-name-input" style="display: none;">
+            <input type="text" id="guest-name" placeholder="نام خود را وارد کنید">
+            <button id="submit-guest">ورود</button>
         </div>
-        <div class="tile-container"></div>
-      </div>
-      <p id="timer" style="text-align:center; margin-top:10px;">زمان باقی‌مانده: 30:00</p>
     </div>
-  </div>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDocs, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <!-- داشبورد بعد از ورود -->
+    <div id="dashboard" style="display: none;" class="container">
+        <h2 id="welcome-msg">خوش آمدید!</h2>
+        <button id="create-challenge-btn">ساخت چلنج</button>
+        <button id="test-game-btn">بازی تستی</button>
+        <div id="challenge-form" style="display: none;">
+            <input type="text" id="challenge-name" placeholder="نام چلنج">
+            <input type="date" id="start-date">
+            <input type="date" id="end-date">
+            <button id="submit-challenge">ساخت چلنج</button>
+        </div>
+        <div id="challenge-link" style="display: none;"></div>
+        <div id="leaderboard" style="display: none;"></div>
+    </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
-      authDomain: "project-4706304311592930157.firebaseapp.com",
-      projectId: "project-4706304311592930157",
-      storageBucket: "project-4706304311592930157.firebasestorage.app",
-      messagingSenderId: "401832134319",
-      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
-      measurementId: "G-LVXWPLG38Q"
-    };
+    <!-- صفحه بازی 2048 -->
+    <div id="game-container" style="display: none;" class="container">
+        <div class="game-info">
+            <span id="score">امتیاز: 0</span>
+            <span id="best">بهترین: 0</span>
+            <button id="save-score" style="display: none;">ذخیره امتیاز</button>
+        </div>
+        <div class="grid-container">
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+            <!-- تکرار 4 ردیف مشابه -->
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+        </div>
+        <p class="game-message" id="game-message"></p>
+        <button id="new-game">بازی جدید</button>
+    </div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    let currentUser = null;
-    let challengeActive = false;
-    let timerInterval;
-
-    // ورود با گوگل
-    document.getElementById("googleLogin").onclick = async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        const result = await signInWithPopup(auth, provider);
-        currentUser = result.user;
-        showChallengeMenu();
-      } catch (err) {
-        alert("خطا در ورود با گوگل");
-      }
-    };
-
-    // ورود مهمان
-    document.getElementById("guestLogin").onclick = () => {
-      document.getElementById("nameInput").style.display = "block";
-    };
-
-    document.getElementById("saveGuestName").onclick = async () => {
-      const name = document.getElementById("guestName").value.trim();
-      if (!name) return alert("نام را وارد کنید");
-      await signInAnonymously(auth);
-      currentUser = { displayName: name, uid: Math.random().toString(36).slice(2) };
-      showChallengeMenu();
-    };
-
-    function showChallengeMenu() {
-      document.getElementById("auth-section").style.display = "none";
-      document.getElementById("challenge-section").style.display = "block";
-    }
-
-    // ساخت چالش جدید
-    document.getElementById("createChallenge").onclick = () => {
-      document.getElementById("challengeForm").style.display = "block";
-    };
-
-    document.getElementById("startChallenge").onclick = () => {
-      const name = document.getElementById("challengeName").value.trim();
-      const time = parseInt(document.getElementById("challengeTime").value) || 30;
-      if (!name) return alert("نام چالش را وارد کنید");
-      startChallenge(name, time);
-    };
-
-    async function startChallenge(name, time) {
-      challengeActive = true;
-      document.getElementById("challenge-section").style.display = "none";
-      document.getElementById("game-section").style.display = "block";
-      loadGame();
-      startTimer(time);
-    }
-
-    function loadGame() {
-      // فایل‌های اصلی بازی 2048
-      const scripts = [
-        "js/bind_polyfill.js",
-        "js/classlist_polyfill.js",
-        "js/animframe_polyfill.js",
-        "js/keyboard_input_manager.js",
-        "js/html_actuator.js",
-        "js/grid.js",
-        "js/tile.js",
-        "js/local_storage_manager.js",
-        "js/game_manager.js",
-        "js/application.js"
-      ];
-      scripts.forEach(src => {
-        const s = document.createElement("script");
-        s.src = src;
-        document.body.appendChild(s);
-      });
-    }
-
-    function startTimer(minutes) {
-      let remaining = minutes * 60;
-      timerInterval = setInterval(() => {
-        const min = Math.floor(remaining / 60);
-        const sec = remaining % 60;
-        document.getElementById("timer").textContent = `زمان باقی‌مانده: ${min}:${sec < 10 ? '0' : ''}${sec}`;
-        remaining--;
-        if (remaining < 0) {
-          clearInterval(timerInterval);
-          challengeActive = false;
-          alert("زمان تمام شد!");
-        }
-      }, 1000);
-    }
-
-    async function saveScore(score) {
-      if (!currentUser) return;
-      await setDoc(doc(db, "leaderboard", currentUser.uid), {
-        name: currentUser.displayName || "مهمان",
-        score: score,
-        timestamp: new Date()
-      });
-    }
-
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
