@@ -48,7 +48,7 @@ class Tile {
     }
 }
 
-// کلاس GameManager (LTR: left=به چپ col کم به زیاد, right=به راست col زیاد به کم)
+// کلاس GameManager
 class GameManager {
     constructor() {
         this.size = 4;
@@ -72,21 +72,21 @@ class GameManager {
     }
     move(direction) {
         let moved = false;
-        if (direction === 'left') { // به چپ: col کم به زیاد
+        if (direction === 'left') {
             for (let i = 0; i < this.size; i++) {
                 let row = this.grid[i].filter(t => t);
                 row = this.traverse(row);
                 this.grid[i] = row.map((t, idx) => t ? new Tile(t.value, i, idx) : null);
                 if (this.hasMoved(row)) moved = true;
             }
-        } else if (direction === 'right') { // به راست: reverse + traverse
+        } else if (direction === 'right') {
             for (let i = 0; i < this.size; i++) {
                 let row = this.grid[i].slice().reverse();
                 row = this.traverse(row);
                 this.grid[i] = row.reverse().map((t, idx) => t ? new Tile(t.value, i, 3 - idx) : null);
                 if (this.hasMoved(row)) moved = true;
             }
-        } else if (direction === 'up') { // بالا: transpose + up
+        } else if (direction === 'up') {
             this.transpose();
             for (let j = 0; j < this.size; j++) {
                 let col = this.grid.map(row => row[j]).filter(t => t);
@@ -97,7 +97,7 @@ class GameManager {
                 if (this.hasMoved(col)) moved = true;
             }
             this.transpose();
-        } else if (direction === 'down') { // پایین: transpose + down (reverse)
+        } else if (direction === 'down') {
             this.transpose();
             for (let j = 0; j < this.size; j++) {
                 let col = this.grid.map(row => row[j]).slice().reverse();
@@ -130,8 +130,7 @@ class GameManager {
         return newCells;
     }
     hasMoved(cells) {
-        // ساده: اگر تغییری بود (merge یا shift)
-        return true; // برای سادگی؛ می‌تونی دقیق‌تر کنی
+        return true; // ساده‌سازی
     }
     transpose() {
         for (let i = 0; i < this.size; i++) {
@@ -288,6 +287,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // دکمه بازگشت به داشبورد (جدید)
+    const backBtn = document.getElementById('back-to-dashboard');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('leaderboard').style.display = 'none';
+            document.getElementById('save-score').style.display = 'none';
+        });
+    }
+
     // ذخیره امتیاز
     const saveScoreBtn = document.getElementById('save-score');
     if (saveScoreBtn) {
@@ -321,18 +331,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('بهترین امتیاز به‌روزرسانی شد!');
             }
             saveScoreBtn.style.display = 'none';
-        });
-    }
-
-    // خروج از بازی
-    const gameContainer = document.getElementById('game-container');
-    if (gameContainer) {
-        gameContainer.addEventListener('click', (e) => {
-            if (!e.target.closest('#new-game') && !e.target.closest('#save-score')) {
-                gameContainer.style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('leaderboard').style.display = 'none';
-            }
         });
     }
 
