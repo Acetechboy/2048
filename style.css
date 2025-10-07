@@ -53,19 +53,20 @@ input {
 
 .grid-container {
     position: relative;
-    width: 500px;
-    height: 500px;
+    width: 428px; /* تغییر: 4*107px بدون padding */
+    height: 428px; /* تغییر: بدون padding */
     margin: 0 auto;
     background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="none" stroke="#bbada0" stroke-width="1"/></svg>') repeat;
-    padding: 3px;
+    padding: 0; /* تغییر: padding 0 برای دقیق align */
     box-sizing: border-box;
-    direction: ltr; /* اضافه: LTR برای grid تا tiles درست align بشن */
+    direction: ltr;
 }
 
 .grid-row {
-    margin-bottom: 3px;
+    margin-bottom: 0; /* تغییر: بدون margin */
     display: flex;
-    flex-direction: row; /* عادی LTR */
+    flex-direction: row;
+    height: 107px; /* اضافه: ارتفاع دقیق */
 }
 .grid-row:last-child {
     margin-bottom: 0;
@@ -77,12 +78,12 @@ input {
 }
 
 .grid-cell {
-    width: 106.25px;
-    height: 106.25px;
-    margin-right: 3px; /* margin-right برای LTR */
+    width: 107px; /* تغییر: دقیق 107px */
+    height: 107px; /* تغییر: دقیق */
+    margin-right: 0; /* تغییر: margin 0 */
     border-radius: 3px;
     background: rgba(238, 228, 218, 0.35);
-    flex: 1;
+    flex: none; /* تغییر: flex none برای دقیق */
 }
 
 .tile, .tile .tile-inner {
@@ -105,23 +106,23 @@ input {
     font-size: 55px;
 }
 
-/* موقعیت‌های tiles LTR استاندارد: x از چپ (col1=0, col4=363), y از بالا */
-.tile.tile-position-1-1 { transform: translate(0px, 0px); }    /* row0 col0: چپ بالا */
-.tile.tile-position-1-2 { transform: translate(121px, 0px); }  /* col1 */
-.tile.tile-position-1-3 { transform: translate(242px, 0px); }  /* col2 */
-.tile.tile-position-1-4 { transform: translate(363px, 0px); }  /* col3: راست بالا */
-.tile.tile-position-2-1 { transform: translate(0px, 121px); }  /* row1 col0 */
-.tile.tile-position-2-2 { transform: translate(121px, 121px); }
-.tile.tile-position-2-3 { transform: translate(242px, 121px); }
-.tile.tile-position-2-4 { transform: translate(363px, 121px); }
-.tile.tile-position-3-1 { transform: translate(0px, 242px); }  /* row2 col0 */
-.tile.tile-position-3-2 { transform: translate(121px, 242px); }
-.tile.tile-position-3-3 { transform: translate(242px, 242px); }
-.tile.tile-position-3-4 { transform: translate(363px, 242px); }
-.tile.tile-position-4-1 { transform: translate(0px, 363px); }  /* row3 col0: چپ پایین */
-.tile.tile-position-4-2 { transform: translate(121px, 363px); }
-.tile.tile-position-4-3 { transform: translate(242px, 363px); }
-.tile.tile-position-4-4 { transform: translate(363px, 363px); } /* col3: راست پایین */
+/* موقعیت‌های tiles LTR دقیق بدون padding/margin */
+.tile.tile-position-1-1 { transform: translate(0px, 0px); }
+.tile.tile-position-1-2 { transform: translate(107px, 0px); }
+.tile.tile-position-1-3 { transform: translate(214px, 0px); }
+.tile.tile-position-1-4 { transform: translate(321px, 0px); }
+.tile.tile-position-2-1 { transform: translate(0px, 107px); }
+.tile.tile-position-2-2 { transform: translate(107px, 107px); }
+.tile.tile-position-2-3 { transform: translate(214px, 107px); }
+.tile.tile-position-2-4 { transform: translate(321px, 107px); }
+.tile.tile-position-3-1 { transform: translate(0px, 214px); }
+.tile.tile-position-3-2 { transform: translate(107px, 214px); }
+.tile.tile-position-3-3 { transform: translate(214px, 214px); }
+.tile.tile-position-3-4 { transform: translate(321px, 214px); }
+.tile.tile-position-4-1 { transform: translate(0px, 321px); }
+.tile.tile-position-4-2 { transform: translate(107px, 321px); }
+.tile.tile-position-4-3 { transform: translate(214px, 321px); }
+.tile.tile-position-4-4 { transform: translate(321px, 321px); }
 
 /* رنگ‌های tiles */
 .tile-2 .tile-inner { background: #eee4da; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
@@ -139,14 +140,21 @@ input {
 .game-info {
     display: flex;
     justify-content: space-between;
+    align-items: center; /* اضافه: وسط عمودی */
     margin-bottom: 10px;
-    width: 500px;
+    width: 428px; /* تغییر: هم‌اندازه grid */
+}
+
+#back-to-dashboard {
+    background: #bbada0; /* تغییر: رنگ متفاوت برای دکمه بازگشت */
+    font-size: 14px;
+    padding: 5px 10px;
 }
 
 .leaderboard {
     margin-top: 20px;
     text-align: left;
-    width: 500px;
+    width: 428px; /* تغییر: هم‌اندازه */
 }
 
 .leaderboard ul {
