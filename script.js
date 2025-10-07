@@ -1,4 +1,4 @@
-// Firebase Config - با اطلاعات شما
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
   authDomain: "project-4706304311592930157.firebaseapp.com",
@@ -15,11 +15,25 @@ const db = firebase.firestore();
 // متغیرهای بازی
 let currentUser = null;
 let gameManager = null;
-let grid = [];
-let score = 0;
 let bestScore = 0;
 
-// کلاس‌های بازی (از کد اصلی 2048 الهام‌گرفته)
+// حفظ/لود لاگین
+function saveUser() {
+    if (currentUser) localStorage.setItem('currentUser', JSON.stringify(currentUser));
+}
+function loadUser() {
+    const saved = localStorage.getItem('currentUser');
+    if (saved) {
+        currentUser = JSON.parse(saved);
+        document.getElementById('welcome-msg').textContent = `خوش آمدید، ${currentUser.name || currentUser.displayName}!`;
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        return true;
+    }
+    return false;
+}
+
+// کلاس Tile
 class Tile {
     constructor(value, row, col) {
         this.value = value;
@@ -32,15 +46,13 @@ class Tile {
         this.element.className = `tile tile-${this.value} tile-position-${this.row + 1}-${this.col + 1}`;
         this.element.innerHTML = `<div class="tile-inner">${this.value}</div>`;
     }
-    savePosition() {
-        this.element.style.top = this.row * 121 + 'px';
-        this.element.style.left = this.col * 121 + 'px';
-    }
 }
 
+// کلاس GameManager (با move کامل برای up/down/left/right)
 class GameManager {
     constructor() {
-        this.grid = new Array(4).fill(0).map(() => new Array(4).fill(null));
+        this.size = 4;
+        this.grid = Array(this.size).fill().map(() => Array(this.size).fill(null));
         this.score = 0;
         this.addRandomTile();
         this.addRandomTile();
@@ -48,8 +60,8 @@ class GameManager {
     }
     addRandomTile() {
         let emptyCells = [];
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 4; j++) {
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
                 if (!this.grid[i][j]) emptyCells.push({row: i, col: j});
             }
         }
@@ -59,69 +71,97 @@ class GameManager {
         }
     }
     move(direction) {
-        // ساده‌سازی حرکت: فقط راست (direction=0) - برای کامل، up/down/left اضافه کن
-        if (direction === 'right') {
-            for (let i = 0; i < 4; i++) {
-                let row = this.grid[i].filter(t => t).reverse();
-                for (let j = 0; j < row.length - 1; j++) {
-                    if (row[j].value === row[j+1].value) {
-                        row[j].value *= 2;
-                        this.score += row[j].value;
-                        row.splice(j+1, 1);
-                    }
-                }
-                while (row.length < 4) row.push(null);
-                this.grid[i] = row.reverse().map((t, idx) => t ? new Tile(t.value, i, 3 - idx) : null);
+        let moved = false;
+        if (direction === 'left' || direction === 'right') {
+            let rowDir = 1;
+            let colDir = direction === 'left' ? 1 : -1;
+            if (direction === 'right') {
+                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
+                colDir = -1;
             }
-        }
-        // مشابه برای left, up, down - مثال برای left:
-        if (direction === 'left') {
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < this.size; i++) {
                 let row = this.grid[i].filter(t => t);
                 for (let j = 0; j < row.length - 1; j++) {
-                    if (row[j].value === row[j+1].value) {
+                    if (row[j].value === row[j + 1].value) {
                         row[j].value *= 2;
                         this.score += row[j].value;
-                        row.splice(j+1, 1);
+                        row.splice(j + 1, 1);
+                        moved = true;
                     }
                 }
-                while (row.length < 4) row.push(null);
-                this.grid[i] = row.map((t, idx) => t ? new Tile(t.value, i, idx) : null);
+                while (row.length < this.size) row.push(null);
+                this.grid[i] = row;
             }
+            if (direction === 'right') {
+                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
+            }
+        } else if (direction === 'up' || direction === 'down') {
+            this.transpose();
+            if (direction === 'down') {
+                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
+            }
+            // حالا مثل left/right عمل کن
+            let colDir = 1;
+            for (let j = 0; j < this.size; j++) {
+                let col = [];
+                for (let i = 0; i < this.size; i++) col.push(this.grid[i][j]);
+                col = col.filter(t => t);
+                for (let i = 0; i < col.length - 1; i++) {
+                    if (col[i].value === col[i + 1].value) {
+                        col[i].value *= 2;
+                        this.score += col[i].value;
+                        col.splice(i + 1, 1);
+                        moved = true;
+                    }
+                }
+                while (col.length < this.size) col.push(null);
+                for (let i = 0; i < this.size; i++) {
+                    this.grid[i][j] = col[i];
+                }
+            }
+            if (direction === 'down') {
+                for (let i = 0; i < this.size; i++) this.grid[i].reverse();
+            }
+            this.transpose();
         }
-        // برای up و down، transpose grid رو انجام بده (کد کامل رو می‌تونی از GitHub اصلی کپی کنی)
-        this.addRandomTile();
+        if (moved) this.addRandomTile();
         this.updateGrid();
         if (this.isGameOver()) {
             document.getElementById('game-message').textContent = 'بازی تمام شد!';
-            document.getElementById('save-score').style.display = 'block'; // اجازه ذخیره امتیاز
+            document.getElementById('save-score').style.display = 'block';
+        }
+    }
+    transpose() {
+        for (let i = 0; i < this.size; i++) {
+            for (let j = i + 1; j < this.size; j++) {
+                [this.grid[i][j], this.grid[j][i]] = [this.grid[j][i], this.grid[i][j]];
+            }
         }
     }
     updateGrid() {
         document.querySelectorAll('.tile').forEach(el => el.remove());
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 4; j++) {
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
                 if (this.grid[i][j]) {
+                    this.grid[i][j].updateClass();
                     document.querySelector('.grid-container').appendChild(this.grid[i][j].element);
-                    this.grid[i][j].savePosition();
                 }
             }
         }
         document.getElementById('score').textContent = `امتیاز: ${this.score}`;
     }
     isGameOver() {
-        // چک پر بودن grid بدون حرکت ممکن - ساده‌سازی
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 4; j++) {
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
                 if (!this.grid[i][j]) return false;
-                if (j < 3 && this.grid[i][j].value === this.grid[i][j+1].value) return false;
-                if (i < 3 && this.grid[i][j].value === this.grid[i+1][j].value) return false;
+                if (j < this.size - 1 && this.grid[i][j].value === this.grid[i][j + 1].value) return false;
+                if (i < this.size - 1 && this.grid[i][j].value === this.grid[i + 1][j].value) return false;
             }
         }
         return true;
     }
     newGame() {
-        this.grid = new Array(4).fill(0).map(() => new Array(4).fill(null));
+        this.grid = Array(this.size).fill().map(() => Array(this.size).fill(null));
         this.score = 0;
         this.addRandomTile();
         this.addRandomTile();
@@ -131,126 +171,180 @@ class GameManager {
     }
 }
 
-// رویدادهای ورود
-document.getElementById('guest-btn').addEventListener('click', () => {
-    document.getElementById('guest-name-input').style.display = 'block';
-});
+// DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    loadUser();  // لود لاگین
 
-document.getElementById('submit-guest').addEventListener('click', () => {
-    const name = document.getElementById('guest-name').value.trim();
-    if (name) {
-        currentUser = { name, uid: 'guest_' + Date.now() };
-        document.getElementById('welcome-msg').textContent = `خوش آمدید، ${name}!`;
-        document.getElementById('login-page').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-    } else {
-        alert('لطفاً نام خود را وارد کنید!');
-    }
-});
-
-document.getElementById('google-btn').addEventListener('click', () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).then((result) => {
-        currentUser = result.user;
-        document.getElementById('welcome-msg').textContent = `خوش آمدید، ${currentUser.displayName}!`;
-        document.getElementById('login-page').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-    }).catch((error) => {
-        alert('خطا در ورود: ' + error.message);
-    });
-});
-
-// ساخت چلنج
-document.getElementById('create-challenge-btn').addEventListener('click', () => {
-    document.getElementById('challenge-form').style.display = 'block';
-});
-
-document.getElementById('submit-challenge').addEventListener('click', () => {
-    const name = document.getElementById('challenge-name').value.trim();
-    const startDate = document.getElementById('start-date').value;
-    const endDate = document.getElementById('end-date').value;
-    if (name && startDate && endDate && new Date(startDate) < new Date(endDate)) {
-        db.collection('challenges').add({
-            name: name,
-            startDate: startDate,
-            endDate: endDate,
-            creator: currentUser.uid || currentUser.name,
-            createdAt: firebase.firestore.Timestamp.now(),
-            active: true
-        }).then((docRef) => {
-            const link = `${window.location.href}?challenge=${docRef.id}`;
-            document.getElementById('challenge-link').innerHTML = `<p>لینک چلنج ساخته شد: <a href="${link}" target="_blank">${link}</a></p><button onclick="document.getElementById('challenge-link').style.display='none';">بستن</button>`;
-            document.getElementById('challenge-link').style.display = 'block';
-            document.getElementById('challenge-form').style.display = 'none';
-            // ریست فرم
-            document.getElementById('challenge-name').value = '';
-            document.getElementById('start-date').value = '';
-            document.getElementById('end-date').value = '';
-        }).catch((error) => {
-            alert('خطا در ساخت چلنج: ' + error.message);
-        });
-    } else {
-        alert('لطفاً اطلاعات کامل و معتبر وارد کنید (تاریخ پایان بعد از شروع)!');
-    }
-});
-
-// بازی تستی
-document.getElementById('test-game-btn').addEventListener('click', () => {
-    document.getElementById('dashboard').style.display = 'none';
-    document.getElementById('game-container').style.display = 'block';
-    gameManager = new GameManager();
-    document.getElementById('best').textContent = `بهترین: ${bestScore}`;
-    // Event listener برای کلیدها (فقط اگر قبلاً اضافه نشده)
-    if (!document.keydownHandler) {
-        document.keydownHandler = true;
-        document.addEventListener('keydown', (e) => {
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                e.preventDefault();
-                gameManager.move(e.key.replace('Arrow', '').toLowerCase());
-            }
+    // رویدادهای ورود
+    const guestBtn = document.getElementById('guest-btn');
+    if (guestBtn) {
+        guestBtn.addEventListener('click', () => {
+            document.getElementById('guest-name-input').style.display = 'flex';
         });
     }
-    document.getElementById('new-game').addEventListener('click', () => gameManager.newGame());
-});
 
-// ذخیره امتیاز (برای چلنج یا کلی)
-document.getElementById('save-score').addEventListener('click', () => {
-    const challengeId = new URLSearchParams(window.location.search).get('challenge');
-    if (challengeId) {
-        // چک فعال بودن چلنج
-        db.collection('challenges').doc(challengeId).get().then((doc) => {
-            if (doc.exists && doc.data().active) {
-                const now = new Date();
-                if (now >= new Date(doc.data().startDate) && now <= new Date(doc.data().endDate)) {
-                    db.collection('scores').add({
-                        challengeId: challengeId,
-                        userId: currentUser.uid || currentUser.name,
-                        userName: currentUser.name || currentUser.displayName || 'ناشناس',
-                        score: gameManager.score,
-                        timestamp: firebase.firestore.Timestamp.now()
-                    }).then(() => {
-                        alert('امتیاز ذخیره شد!');
-                        loadLeaderboard(challengeId);
-                    }).catch((error) => {
-                        alert('خطا در ذخیره: ' + error.message);
-                    });
-                } else {
-                    alert('چلنج در زمان فعال نیست!');
+    const submitGuest = document.getElementById('submit-guest');
+    if (submitGuest) {
+        submitGuest.addEventListener('click', () => {
+            const name = document.getElementById('guest-name').value.trim();
+            if (name) {
+                currentUser = { name, uid: 'guest_' + Date.now() };
+                saveUser();
+                document.getElementById('welcome-msg').textContent = `خوش آمدید، ${name}!`;
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                const challengeId = new URLSearchParams(window.location.search).get('challenge');
+                if (challengeId) {
+                    loadLeaderboard(challengeId);
+                    document.getElementById('test-game-btn').click();
                 }
             } else {
-                alert('چلنج یافت نشد!');
+                alert('لطفاً نام خود را وارد کنید!');
             }
         });
-    } else {
-        // ذخیره کلی (local)
-        bestScore = Math.max(bestScore, gameManager.score);
-        document.getElementById('best').textContent = `بهترین: ${bestScore}`;
-        alert('امتیاز به عنوان بهترین ذخیره شد!');
     }
-    document.getElementById('save-score').style.display = 'none';
+
+    const googleBtn = document.getElementById('google-btn');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then((result) => {
+                currentUser = result.user;
+                saveUser();
+                document.getElementById('welcome-msg').textContent = `خوش آمدید، ${currentUser.displayName}!`;
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                const challengeId = new URLSearchParams(window.location.search).get('challenge');
+                if (challengeId) {
+                    loadLeaderboard(challengeId);
+                    document.getElementById('test-game-btn').click();
+                }
+            }).catch((error) => {
+                alert('خطا در ورود: ' + error.message);
+            });
+        });
+    }
+
+    // ساخت چلنج
+    const createChallengeBtn = document.getElementById('create-challenge-btn');
+    if (createChallengeBtn) {
+        createChallengeBtn.addEventListener('click', () => {
+            document.getElementById('challenge-form').style.display = 'flex';
+        });
+    }
+
+    const submitChallenge = document.getElementById('submit-challenge');
+    if (submitChallenge) {
+        submitChallenge.addEventListener('click', () => {
+            const name = document.getElementById('challenge-name').value.trim();
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            if (name && startDate && endDate && new Date(startDate) < new Date(endDate)) {
+                db.collection('challenges').add({
+                    name: name,
+                    startDate: firebase.firestore.Timestamp.fromDate(new Date(startDate)),
+                    endDate: firebase.firestore.Timestamp.fromDate(new Date(endDate)),
+                    creator: currentUser.uid || currentUser.name,
+                    createdAt: firebase.firestore.Timestamp.now(),
+                    active: true
+                }).then((docRef) => {
+                    const link = `${window.location.href}?challenge=${docRef.id}`;
+                    document.getElementById('challenge-link').innerHTML = `<p>لینک چلنج: <a href="${link}" target="_blank">${link}</a></p><button onclick="document.getElementById('challenge-link').style.display='none';">بستن</button>`;
+                    document.getElementById('challenge-link').style.display = 'block';
+                    document.getElementById('challenge-form').style.display = 'none';
+                    document.getElementById('challenge-name').value = '';
+                    document.getElementById('start-date').value = '';
+                    document.getElementById('end-date').value = '';
+                }).catch((error) => {
+                    alert('خطا در ساخت چلنج: ' + error.message);
+                });
+            } else {
+                alert('لطفاً اطلاعات کامل و معتبر وارد کنید (پایان بعد از شروع)!');
+            }
+        });
+    }
+
+    // بازی تستی
+    const testGameBtn = document.getElementById('test-game-btn');
+    if (testGameBtn) {
+        testGameBtn.addEventListener('click', () => {
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            if (!gameManager) gameManager = new GameManager();
+            document.getElementById('best').textContent = `بهترین: ${bestScore}`;
+            if (!document.keydownHandler) {
+                document.keydownHandler = true;
+                document.addEventListener('keydown', (e) => {
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.preventDefault();
+                        gameManager.move(e.key.replace('Arrow', '').toLowerCase());
+                    }
+                });
+            }
+            const newGameBtn = document.getElementById('new-game');
+            if (newGameBtn) newGameBtn.addEventListener('click', () => gameManager.newGame());
+        });
+    }
+
+    // ذخیره امتیاز
+    const saveScoreBtn = document.getElementById('save-score');
+    if (saveScoreBtn) {
+        saveScoreBtn.addEventListener('click', () => {
+            const challengeId = new URLSearchParams(window.location.search).get('challenge');
+            if (challengeId) {
+                db.collection('challenges').doc(challengeId).get().then((doc) => {
+                    if (doc.exists && doc.data().active) {
+                        const now = firebase.firestore.Timestamp.now();
+                        if (now >= doc.data().startDate && now <= doc.data().endDate) {
+                            db.collection('scores').add({
+                                challengeId: challengeId,
+                                userId: currentUser.uid || currentUser.name,
+                                userName: currentUser.name || currentUser.displayName || 'ناشناس',
+                                score: gameManager.score,
+                                timestamp: now
+                            }).then(() => {
+                                alert('امتیاز ذخیره شد!');
+                                loadLeaderboard(challengeId);
+                            }).catch((error) => alert('خطا در ذخیره: ' + error.message));
+                        } else {
+                            alert('چلنج در زمان فعال نیست!');
+                        }
+                    } else {
+                        alert('چلنج یافت نشد!');
+                    }
+                });
+            } else {
+                bestScore = Math.max(bestScore, gameManager.score);
+                document.getElementById('best').textContent = `بهترین: ${bestScore}`;
+                alert('بهترین امتیاز به‌روزرسانی شد!');
+            }
+            saveScoreBtn.style.display = 'none';
+        });
+    }
+
+    // خروج از بازی
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.addEventListener('click', (e) => {
+            if (!e.target.closest('#new-game') && !e.target.closest('#save-score')) {
+                gameContainer.style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('leaderboard').style.display = 'none';
+            }
+        });
+    }
+
+    // چک چلنج در URL
+    const challengeId = new URLSearchParams(window.location.search).get('challenge');
+    if (challengeId && !loadUser()) {
+        alert('برای شرکت در چلنج، ابتدا وارد شوید.');
+    } else if (challengeId && currentUser) {
+        loadLeaderboard(challengeId);
+        document.getElementById('test-game-btn').click();
+    }
 });
 
-// لود لیدربورد (برای چلنج)
+// تابع لیدربورد
 function loadLeaderboard(challengeId) {
     db.collection('scores')
         .where('challengeId', '==', challengeId)
@@ -277,34 +371,18 @@ function loadLeaderboard(challengeId) {
         });
 }
 
-// چک URL برای چلنج خودکار (در onload)
-window.addEventListener('load', () => {
-    const challengeId = new URLSearchParams(window.location.search).get('challenge');
-    if (challengeId && currentUser) {
-        loadLeaderboard(challengeId);
-        // شروع بازی تستی
-        document.getElementById('test-game-btn').click();
-    } else if (challengeId) {
-        // اگر کاربر لاگین نکرده، به صفحه ورود برو
-        alert('لطفاً ابتدا وارد شوید!');
-    }
-});
-
-// خروج از بازی به داشبورد (کلیک خارج از دکمه‌ها)
-document.getElementById('game-container').addEventListener('click', (e) => {
-    if (!e.target.closest('#new-game') && !e.target.closest('#save-score')) {
-        document.getElementById('game-container').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        document.getElementById('leaderboard').style.display = 'none';
-    }
-});
-
-// مدیریت خروج (اختیاری)
+// مدیریت auth گوگل
 auth.onAuthStateChanged((user) => {
-    if (!user && currentUser && currentUser.uid.startsWith('guest_')) {
-        // guest ها logout نمی‌شن، اما گوگل می‌شه
-        currentUser = null;
-        document.getElementById('dashboard').style.display = 'none';
-        document.getElementById('login-page').style.display = 'block';
+    if (user && !currentUser) {
+        currentUser = user;
+        saveUser();
+        document.getElementById('welcome-msg').textContent = `خوش آمدید، ${user.displayName}!`;
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        const challengeId = new URLSearchParams(window.location.search).get('challenge');
+        if (challengeId) {
+            loadLeaderboard(challengeId);
+            document.getElementById('test-game-btn').click();
+        }
     }
 });
