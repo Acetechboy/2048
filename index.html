@@ -1,78 +1,741 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa">
 <head>
-    <meta charset="utf-8">
-    <title>2048 شخصی‌سازی‌شده</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+  <meta charset="utf-8">
+  <title>2048 چَلِنج</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* main.css اصلی 2048 + فیکس RTL و responsive */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #faf8ef;
+      color: #776e65;
+      font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+      font-size: 18px;
+      direction: rtl;
+    }
+
+    .container {
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .heading {
+      width: 500px;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      font-size: 80px;
+      font-weight: bold;
+      margin: 0;
+      display: block;
+      text-align: center;
+      line-height: 0.8;
+    }
+
+    .scores-container {
+      float: left;
+      text-align: left;
+      position: relative;
+      display: flex;
+      gap: 10px;
+    }
+
+    .score-container, .best-container {
+      position: relative;
+      display: inline-block;
+      background: #bbada0;
+      padding: 15px 25px;
+      font-size: 25px;
+      height: 25px;
+      line-height: 47px;
+      font-weight: bold;
+      border-radius: 3px;
+      color: white;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .score-container:after, .best-container:after {
+      position: absolute;
+      width: 100%;
+      top: 10px;
+      left: 0;
+      text-transform: uppercase;
+      font-size: 13px;
+      line-height: 13px;
+      text-align: center;
+      color: #eee4da;
+    }
+
+    .score-container:after {
+      content: "امتیاز";
+    }
+
+    .best-container:after {
+      content: "بهترین";
+    }
+
+    .grid-container {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      padding: 4px;
+      box-sizing: border-box;
+      background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="none" stroke="#bbada0" stroke-width="1"/></svg>') repeat;
+      direction: ltr; /* LTR برای grid */
+    }
+
+    .grid-row {
+      margin-bottom: 4px;
+    }
+
+    .grid-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .grid-row:after {
+      clear: both;
+      content: "";
+      display: block;
+    }
+
+    .grid-cell {
+      width: 106.25px;
+      height: 106.25px;
+      margin-right: 4px;
+      float: left;
+      border-radius: 3px;
+      background: rgba(238, 228, 218, 0.35);
+    }
+
+    .tile-container {
+      position: absolute;
+      z-index: 1;
+    }
+
+    .tile, .tile .tile-inner {
+      width: 107px;
+      height: 107px;
+      line-height: 107px;
+    }
+
+    .tile {
+      position: absolute;
+      -webkit-transition: 400ms ease 100ms;
+      -moz-transition: 400ms ease 100ms;
+      transition: 400ms ease 100ms;
+      -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+      -moz-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+      transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+      -webkit-backface-visibility: hidden;
+      -moz-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+
+    .tile .tile-inner {
+      border-radius: 3px;
+      background: #eee4da;
+      text-align: center;
+      font-weight: bold;
+      z-index: 10;
+      font-size: 55px;
+    }
+
+    .tile.tile-position-1-1 {
+      -webkit-transform: translate(0px, 0px);
+      -moz-transform: translate(0px, 0px);
+      transform: translate(0px, 0px);
+    }
+
+    .tile.tile-position-1-2 {
+      -webkit-transform: translate(0px, 121px);
+      -moz-transform: translate(0px, 121px);
+      transform: translate(0px, 121px);
+    }
+
+    .tile.tile-position-1-3 {
+      -webkit-transform: translate(0px, 242px);
+      -moz-transform: translate(0px, 242px);
+      transform: translate(0px, 242px);
+    }
+
+    .tile.tile-position-1-4 {
+      -webkit-transform: translate(0px, 363px);
+      -moz-transform: translate(0px, 363px);
+      transform: translate(0px, 363px);
+    }
+
+    .tile.tile-position-2-1 {
+      -webkit-transform: translate(121px, 0px);
+      -moz-transform: translate(121px, 0px);
+      transform: translate(121px, 0px);
+    }
+
+    .tile.tile-position-2-2 {
+      -webkit-transform: translate(121px, 121px);
+      -moz-transform: translate(121px, 121px);
+      transform: translate(121px, 121px);
+    }
+
+    .tile.tile-position-2-3 {
+      -webkit-transform: translate(121px, 242px);
+      -moz-transform: translate(121px, 242px);
+      transform: translate(121px, 242px);
+    }
+
+    .tile.tile-position-2-4 {
+      -webkit-transform: translate(121px, 363px);
+      -moz-transform: translate(121px, 363px);
+      transform: translate(121px, 363px);
+    }
+
+    .tile.tile-position-3-1 {
+      -webkit-transform: translate(242px, 0px);
+      -moz-transform: translate(242px, 0px);
+      transform: translate(242px, 0px);
+    }
+
+    .tile.tile-position-3-2 {
+      -webkit-transform: translate(242px, 121px);
+      -moz-transform: translate(242px, 121px);
+      transform: translate(242px, 121px);
+    }
+
+    .tile.tile-position-3-3 {
+      -webkit-transform: translate(242px, 242px);
+      -moz-transform: translate(242px, 242px);
+      transform: translate(242px, 242px);
+    }
+
+    .tile.tile-position-3-4 {
+      -webkit-transform: translate(242px, 363px);
+      -moz-transform: translate(242px, 363px);
+      transform: translate(242px, 363px);
+    }
+
+    .tile.tile-position-4-1 {
+      -webkit-transform: translate(363px, 0px);
+      -moz-transform: translate(363px, 0px);
+      transform: translate(363px, 0px);
+    }
+
+    .tile.tile-position-4-2 {
+      -webkit-transform: translate(363px, 121px);
+      -moz-transform: translate(363px, 121px);
+      transform: translate(363px, 121px);
+    }
+
+    .tile.tile-position-4-3 {
+      -webkit-transform: translate(363px, 242px);
+      -moz-transform: translate(363px, 242px);
+      transform: translate(363px, 242px);
+    }
+
+    .tile.tile-position-4-4 {
+      -webkit-transform: translate(363px, 363px);
+      -moz-transform: translate(363px, 363px);
+      transform: translate(363px, 363px);
+    }
+
+    .tile .tile-inner {
+      box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0);
+    }
+
+    .tile.tile-2 .tile-inner {
+      background: #eee4da;
+    }
+
+    .tile.tile-4 .tile-inner {
+      background: #ede0c8;
+    }
+
+    .tile.tile-8 .tile-inner {
+      color: #f9f6f2;
+      background: #f2b179;
+    }
+
+    .tile.tile-16 .tile-inner {
+      color: #f9f6f2;
+      background: #f59563;
+    }
+
+    .tile.tile-32 .tile-inner {
+      color: #f9f6f2;
+      background: #f67c5f;
+    }
+
+    .tile.tile-64 .tile-inner {
+      color: #f9f6f2;
+      background: #f65e3b;
+    }
+
+    .tile.tile-128 .tile-inner {
+      color: #f9f6f2;
+      background: #edcf72;
+      box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.2381), inset 0 0 0 1px rgba(255, 255, 255, 0);
+      font-size: 45px;
+    }
+
+    @media screen and (max-width: 520px) {
+      .heading {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .container {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding-left: 15px;
+        padding-right: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+
+      .grid-container {
+        width: 100%;
+        height: 100%;
+      }
+
+      .tile, .tile .tile-inner {
+        width: 57px;
+        height: 57px;
+        line-height: 57px;
+      }
+
+      .tile.tile-position-1-1 {
+        -webkit-transform: translate(0px, 0px);
+        -moz-transform: translate(0px, 0px);
+        transform: translate(0px, 0px);
+      }
+
+      .tile.tile-position-1-2 {
+        -webkit-transform: translate(0px, 63px);
+        -moz-transform: translate(0px, 63px);
+        transform: translate(0px, 63px);
+      }
+
+      .tile.tile-position-1-3 {
+        -webkit-transform: translate(0px, 126px);
+        -moz-transform: translate(0px, 126px);
+        transform: translate(0px, 126px);
+      }
+
+      .tile.tile-position-1-4 {
+        -webkit-transform: translate(0px, 189px);
+        -moz-transform: translate(0px, 189px);
+        transform: translate(0px, 189px);
+      }
+
+      .tile.tile-position-2-1 {
+        -webkit-transform: translate(63px, 0px);
+        -moz-transform: translate(63px, 0px);
+        transform: translate(63px, 0px);
+      }
+
+      .tile.tile-position-2-2 {
+        -webkit-transform: translate(63px, 63px);
+        -moz-transform: translate(63px, 63px);
+        transform: translate(63px, 63px);
+      }
+
+      .tile.tile-position-2-3 {
+        -webkit-transform: translate(63px, 126px);
+        -moz-transform: translate(63px, 126px);
+        transform: translate(63px, 126px);
+      }
+
+      .tile.tile-position-2-4 {
+        -webkit-transform: translate(63px, 189px);
+        -moz-transform: translate(63px, 189px);
+        transform: translate(63px, 189px);
+      }
+
+      .tile.tile-position-3-1 {
+        -webkit-transform: translate(126px, 0px);
+        -moz-transform: translate(126px, 0px);
+        transform: translate(126px, 0px);
+      }
+
+      .tile.tile-position-3-2 {
+        -webkit-transform: translate(126px, 63px);
+        -moz-transform: translate(126px, 63px);
+        transform: translate(126px, 63px);
+      }
+
+      .tile.tile-position-3-3 {
+        -webkit-transform: translate(126px, 126px);
+        -moz-transform: translate(126px, 126px);
+        transform: translate(126px, 126px);
+      }
+
+      .tile.tile-position-3-4 {
+        -webkit-transform: translate(126px, 189px);
+        -moz-transform: translate(126px, 189px);
+        transform: translate(126px, 189px);
+      }
+
+      .tile.tile-position-4-1 {
+        -webkit-transform: translate(189px, 0px);
+        -moz-transform: translate(189px, 0px);
+        transform: translate(189px, 0px);
+      }
+
+      .tile.tile-position-4-2 {
+        -webkit-transform: translate(189px, 63px);
+        -moz-transform: translate(189px, 63px);
+        transform: translate(189px, 63px);
+      }
+
+      .tile.tile-position-4-3 {
+        -webkit-transform: translate(189px, 126px);
+        -moz-transform: translate(189px, 126px);
+        transform: translate(189px, 126px);
+      }
+
+      .tile.tile-position-4-4 {
+        -webkit-transform: translate(189px, 189px);
+        -moz-transform: translate(189px, 189px);
+        transform: translate(189px, 189px);
+      }
+
+      .tile .tile-inner {
+        font-size: 35px;
+      }
+
+      .grid-cell {
+        width: 57px;
+        height: 57px;
+        margin-right: 3px;
+      }
+
+      .grid-row {
+        margin-bottom: 3px;
+      }
+
+      .scores-container {
+        float: right;
+        margin-top: 0;
+        position: relative;
+        display: block;
+        width: 100%;
+      }
+
+      .score-container, .best-container {
+        position: relative;
+        display: inline-block;
+        background: #bbada0;
+        padding: 15px 25px;
+        font-size: 25px;
+        height: 25px;
+        line-height: 47px;
+        font-weight: bold;
+        border-radius: 3px;
+        color: white;
+        margin-top: 8px;
+        text-align: center;
+      }
+    }
+
+    /* دکمه‌ها و بخش‌ها */
+    #auth-section, #challenge-section, #game-section {
+      width: 100%;
+      margin: 20px 0;
+    }
+
+    button {
+      background: #8f7a66;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #bbada0;
+    }
+
+    input {
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #bbada0;
+      border-radius: 5px;
+      width: 200px;
+    }
+
+    #timer {
+      font-size: 20px;
+      font-weight: bold;
+      color: #776e65;
+    }
+
+    .game-message {
+      text-align: center;
+      margin: 10px 0;
+    }
+  </style>
 </head>
-<body>
-    <!-- صفحه ورود -->
-    <div id="login-page" class="container">
-        <h1>به 2048 خوش آمدید!</h1>
-        <button id="guest-btn">ورود مهمان</button>
-        <button id="google-btn">ورود با گوگل</button>
-        <div id="guest-name-input" style="display: none;">
-            <input type="text" id="guest-name" placeholder="نام خود را وارد کنید">
-            <button id="submit-guest">ورود</button>
-        </div>
+<body dir="rtl">
+  <div class="container">
+    <div class="heading">
+      <h1 class="title">2048 چَلِنج</h1>
+      <div class="scores-container">
+        <div class="score-container" id="score">0</div>
+        <div class="best-container" id="best">0</div>
+      </div>
     </div>
 
-    <!-- داشبورد بعد از ورود -->
-    <div id="dashboard" style="display: none;" class="container">
-        <h2 id="welcome-msg">خوش آمدید!</h2>
-        <button id="create-challenge-btn">ساخت چلنج</button>
-        <button id="test-game-btn">بازی تستی</button>
-        <div id="challenge-form" style="display: none;">
-            <input type="text" id="challenge-name" placeholder="نام چلنج">
-            <input type="datetime-local" id="start-date">
-            <input type="datetime-local" id="end-date">
-            <button id="submit-challenge">ساخت چلنج</button>
-        </div>
-        <div id="challenge-link" style="display: none;"></div>
-        <div id="leaderboard" style="display: none;"></div>
+    <div id="auth-section" style="text-align:center; margin: 20px;">
+      <button id="googleLogin">ورود با گوگل</button>
+      <button id="guestLogin">ورود به عنوان مهمان</button>
+      <div id="nameInput" style="display:none; margin-top:10px;">
+        <input id="guestName" placeholder="نام خود را وارد کنید">
+        <button id="saveGuestName">ادامه</button>
+      </div>
     </div>
 
-    <!-- صفحه بازی 2048 -->
-    <div id="game-container" style="display: none;" class="container">
-        <div class="game-info">
-            <span id="score">امتیاز: 0</span>
-            <span id="best">بهترین: 0</span>
-            <button id="save-score" style="display: none;">ذخیره امتیاز</button>
-            <button id="back-to-dashboard">بازگشت به داشبورد</button>
-        </div>
+    <div id="challenge-section" style="display:none; text-align:center;">
+      <button id="createChallenge">ساخت چالش جدید</button>
+      <div id="challengeForm" style="display:none; margin-top:10px;">
+        <input id="challengeName" placeholder="نام چالش">
+        <input id="challengeTime" type="number" placeholder="مدت (دقیقه)">
+        <button id="startChallenge">شروع</button>
+      </div>
+      <div id="leaderboard" style="margin-top:20px;"></div>
+    </div>
+
+    <div id="game-section" style="display:none;">
+      <div class="game-container">
         <div class="grid-container">
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
-            <div class="grid-row">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-            </div>
+          <div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div>
         </div>
-        <p class="game-message" id="game-message"></p>
-        <button id="new-game">بازی جدید</button>
+        <div class="tile-container"></div>
+      </div>
+      <p id="timer" style="text-align:center; margin-top:10px;">زمان باقی‌مانده: 30:00</p>
+      <div class="game-message">
+        <p id="game-over" style="display:none;">بازی تمام شد!</p>
+        <button id="new-game" style="display:none;">بازی جدید</button>
+      </div>
     </div>
+  </div>
 
-    <script src="script.js"></script>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDocs, collection, query, orderBy, limit, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDhmbx2vQkRBk1r9j21bwuzFw3uEJUdZDY",
+      authDomain: "project-4706304311592930157.firebaseapp.com",
+      projectId: "project-4706304311592930157",
+      storageBucket: "project-4706304311592930157.firebasestorage.app",
+      messagingSenderId: "401832134319",
+      appId: "1:401832134319:web:99704cf6ec3d2b89cd765a",
+      measurementId: "G-LVXWPLG38Q"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let currentUser = null;
+    let challengeActive = false;
+    let timerInterval;
+    let currentChallengeId = null;
+    let gameManager = null;
+
+    // حفظ لاگین
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        showChallengeMenu();
+      }
+    });
+
+    // ورود با گوگل
+    document.getElementById("googleLogin").onclick = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        currentUser = result.user;
+        showChallengeMenu();
+      } catch (err) {
+        alert("خطا در ورود با گوگل: " + err.message);
+      }
+    };
+
+    // ورود مهمان
+    document.getElementById("guestLogin").onclick = () => {
+      document.getElementById("nameInput").style.display = "block";
+    };
+
+    document.getElementById("saveGuestName").onclick = async () => {
+      const name = document.getElementById("guestName").value.trim();
+      if (!name) return alert("نام را وارد کنید");
+      try {
+        await signInAnonymously(auth);
+        const user = auth.currentUser;
+        await updateProfile(user, { displayName: name });
+        currentUser = user;
+        showChallengeMenu();
+      } catch (err) {
+        alert("خطا در ورود مهمان: " + err.message);
+      }
+    };
+
+    function showChallengeMenu() {
+      document.getElementById("auth-section").style.display = "none";
+      document.getElementById("challenge-section").style.display = "block";
+    }
+
+    // ساخت چالش جدید
+    document.getElementById("createChallenge").onclick = () => {
+      document.getElementById("challengeForm").style.display = "block";
+    };
+
+    document.getElementById("startChallenge").onclick = async () => {
+      const name = document.getElementById("challengeName").value.trim();
+      const time = parseInt(document.getElementById("challengeTime").value) || 30;
+      if (!name) return alert("نام چالش را وارد کنید");
+      try {
+        const challengeDoc = await addDoc(collection(db, "challenges"), {
+          name: name,
+          duration: time,
+          startTime: new Date(),
+          creator: currentUser.uid,
+          active: true
+        });
+        currentChallengeId = challengeDoc.id;
+        startChallenge(name, time);
+      } catch (err) {
+        alert("خطا در ساخت چالش: " + err.message);
+      }
+    };
+
+    async function startChallenge(name, time) {
+      challengeActive = true;
+      document.getElementById("challenge-section").style.display = "none";
+      document.getElementById("game-section").style.display = "block";
+      loadGame();
+      startTimer(time);
+    }
+
+    function loadGame() {
+      // فایل‌های اصلی بازی 2048 + touch برای لمسی
+      const scripts = [
+        "js/bind_polyfill.js",
+        "js/classlist_polyfill.js",
+        "js/animframe_polyfill.js",
+        "js/keyboard_input_manager.js",
+        "js/touch_input_manager.js", // اضافه: برای لمسی (swipe on phone)
+        "js/html_actuator.js",
+        "js/grid.js",
+        "js/tile.js",
+        "js/local_storage_manager.js",
+        "js/game_manager.js",
+        "js/application.js"
+      ];
+      scripts.forEach(src => {
+        const s = document.createElement("script");
+        s.src = src;
+        document.body.appendChild(s);
+        s.onload = () => {
+          if (src === "js/application.js") {
+            // شروع بازی بعد از load
+            window.application = new ApplicationManager(4, KeyboardInputManager, HTMLActuator, TouchInputManager); // TouchInputManager برای لمسی
+            gameManager = window.application.gameManager;
+            document.getElementById('score').textContent = gameManager.score;
+            gameManager.actuator.continueGame(); // ادامه یا جدید
+          }
+        };
+      });
+    }
+
+    function startTimer(minutes) {
+      let remaining = minutes * 60;
+      timerInterval = setInterval(() => {
+        const min = Math.floor(remaining / 60);
+        const sec = remaining % 60;
+        document.getElementById("timer").textContent = `زمان باقی‌مانده: ${min}:${sec < 10 ? '0' : ''}${sec}`;
+        remaining--;
+        if (remaining < 0) {
+          clearInterval(timerInterval);
+          challengeActive = false;
+          const score = gameManager ? gameManager.score : 0;
+          saveScore(score);
+          alert("زمان تمام شد! امتیاز شما ذخیره شد.");
+          document.getElementById("game-section").style.display = "none";
+          document.getElementById("challenge-section").style.display = "block";
+          loadLeaderboard(currentChallengeId);
+        }
+      }, 1000);
+    }
+
+    async function saveScore(score) {
+      if (!currentUser || !currentChallengeId) return;
+      try {
+        await addDoc(collection(db, "scores"), {
+          challengeId: currentChallengeId,
+          userId: currentUser.uid,
+          userName: currentUser.displayName || "مهمان",
+          score: score,
+          timestamp: new Date()
+        });
+      } catch (err) {
+        alert("خطا در ذخیره امتیاز: " + err.message);
+      }
+    }
+
+    async function loadLeaderboard(challengeId) {
+      if (!challengeId) return;
+      try {
+        const q = query(collection(db, "scores"), where("challengeId", "==", challengeId), orderBy("score", "desc"), limit(10));
+        const querySnapshot = await getDocs(q);
+        let html = '<h3>لیدربورد</h3><ul>';
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          html += `<li>${data.userName}: ${data.score}</li>`;
+        });
+        html += '</ul>';
+        document.getElementById("leaderboard").innerHTML = html;
+      } catch (err) {
+        alert("خطا در لود لیدربورد: " + err.message);
+      }
+    }
+
+    // دکمه بازی جدید
+    document.getElementById("new-game").onclick = () => {
+      if (gameManager) gameManager.restart();
+      document.getElementById('game-over').style.display = 'none';
+      document.getElementById("new-game").style.display = 'none';
+    };
+
+    // وقتی بازی تمام شد
+    window.addEventListener('gameOver', () => {
+      document.getElementById('game-over').style.display = 'block';
+      document.getElementById("new-game").style.display = 'block';
+      const score = gameManager.score;
+      if (challengeActive) saveScore(score);
+    });
+  </script>
 </body>
 </html>
