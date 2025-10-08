@@ -1,116 +1,149 @@
-html, body {
-    margin: 0;
-    padding: 0;
-    background: #faf8ef;
-    color: #776e65;
-    font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
-    font-size: 18px;
-    direction: rtl;
+body {
+  margin: 0;
+  padding: 0;
+  background: #faf8ef;
+  color: #776e65;
+  font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
+  direction: rtl;
 }
 
 .container {
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  max-width: 500px;
 }
 
-#game-container .container {
-    padding-top: 0;
-    margin-top: 0;
+.heading {
+  width: 500px;
+  margin-bottom: 10px;
 }
 
-button {
-    background: #8f7a66;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin: 5px auto;
-    border-radius: 5px;
-    cursor: pointer;
-    display: block;
+.title {
+  font-size: 80px;
+  font-weight: bold;
+  margin: 0;
+  display: block;
+  text-align: center;
+  line-height: 0.8;
 }
 
-button:hover {
-    background: #bbada0;
+.scores-container {
+  float: left;
+  text-align: left;
+  position: relative;
+  display: flex;
+  gap: 10px;
 }
 
-input {
-    padding: 10px;
-    margin: 5px auto;
-    border: 1px solid #bbada0;
-    border-radius: 5px;
-    display: block;
-    width: 200px;
+.score-container, .best-container {
+  position: relative;
+  display: inline-block;
+  background: #bbada0;
+  padding: 15px 25px;
+  font-size: 25px;
+  height: 25px;
+  line-height: 47px;
+  font-weight: bold;
+  border-radius: 3px;
+  color: white;
+  margin-top: 8px;
+  text-align: center;
 }
 
-#guest-name-input, #challenge-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+.score-container:after, .best-container:after {
+  position: absolute;
+  width: 100%;
+  top: 10px;
+  left: 0;
+  text-transform: uppercase;
+  font-size: 13px;
+  line-height: 13px;
+  text-align: center;
+  color: #eee4da;
+}
+
+.score-container:after {
+  content: "امتیاز";
+}
+
+.best-container:after {
+  content: "بهترین";
 }
 
 .grid-container {
-    position: relative;
-    width: 500px;
-    height: 500px;
-    padding: 4px; /* اصلی: padding 4px */
-    box-sizing: border-box;
-    background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="none" stroke="#bbada0" stroke-width="1"/></svg>') repeat;
-    direction: ltr;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  padding: 4px;
+  box-sizing: border-box;
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="none" stroke="#bbada0" stroke-width="1"/></svg>') repeat;
+  direction: ltr;
 }
 
 .grid-row {
-    margin-bottom: 4px; /* اصلی: margin-bottom 4px */
-    height: 106.25px; /* اصلی */
+  margin-bottom: 4px;
 }
+
 .grid-row:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
+
 .grid-row:after {
-    clear: both;
-    content: "";
-    display: block;
+  clear: both;
+  content: "";
+  display: block;
 }
 
 .grid-cell {
-    width: 106.25px; /* اصلی */
-    height: 106.25px;
-    margin-right: 4px; /* اصلی: margin-right 4px */
-    float: left; /* اصلی: float left */
-    border-radius: 3px;
-    background: rgba(238, 228, 218, 0.35);
-    border: 2px solid #bbada0; /* اضافه: برای واضح کردن ستون‌ها */
+  width: 106.25px;
+  height: 106.25px;
+  margin-right: 4px;
+  float: left;
+  border-radius: 3px;
+  background: rgba(238, 228, 218, 0.35);
+  border: 2px solid #bbada0;
+}
+
+.tile-container {
+  position: absolute;
+  z-index: 1;
 }
 
 .tile, .tile .tile-inner {
-    width: 107px;
-    height: 107px;
-    line-height: 107px;
+  width: 107px;
+  height: 107px;
+  line-height: 107px;
 }
+
 .tile {
-    position: absolute;
-    transition: 400ms ease 100ms; /* اصلی: 400ms */
-    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1); /* اصلی */
-    backface-visibility: hidden;
+  position: absolute;
+  -webkit-transition: 400ms ease 100ms;
+  -moz-transition: 400ms ease 100ms;
+  transition: 400ms ease 100ms;
+  -webkit-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  -moz-transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .tile .tile-inner {
-    border-radius: 3px;
-    background: #eee4da;
-    text-align: center;
-    font-weight: bold;
-    z-index: 10;
-    font-size: 55px;
+  border-radius: 3px;
+  background: #eee4da;
+  text-align: center;
+  font-weight: bold;
+  z-index: 10;
+  font-size: 55px;
 }
 
-/* موقعیت‌های tiles اصلی با گام 121px */
 .tile.tile-position-1-1 { transform: translate(0px, 0px); }
 .tile.tile-position-1-2 { transform: translate(0px, 121px); }
 .tile.tile-position-1-3 { transform: translate(0px, 242px); }
@@ -128,48 +161,157 @@ input {
 .tile.tile-position-4-3 { transform: translate(363px, 242px); }
 .tile.tile-position-4-4 { transform: translate(363px, 363px); }
 
-/* رنگ‌های tiles اصلی */
-.tile-2 .tile-inner { background: #eee4da; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
-.tile-4 .tile-inner { background: #ede0c8; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
-.tile-8 .tile-inner { background: #f2b179; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.2381), inset 0 0 0 1px rgba(255, 255, 255, 0); }
-.tile-16 .tile-inner { background: #f59563; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.3175), inset 0 0 0 1px rgba(255, 255, 255, 0); }
-.tile-32 .tile-inner { background: #f67c5f; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.3969), inset 0 0 0 1px rgba(255, 255, 255, 0); }
-.tile-64 .tile-inner { background: #f65e3b; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.4763), inset 0 0 0 1px rgba(255, 255, 255, 0); }
-.tile-128 .tile-inner { background: #edcf72; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.5557), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
-.tile-256 .tile-inner { background: #edcc61; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.6351), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
-.tile-512 .tile-inner { background: #edc850; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.7145), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
-.tile-1024 .tile-inner { background: #edc53f; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.7938), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 35px; }
-.tile-2048 .tile-inner { background: #edc22e; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.8732), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 35px; }
+.tile.tile-2 .tile-inner { background: #eee4da; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+.tile.tile-4 .tile-inner { background: #ede0c8; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+.tile.tile-8 .tile-inner { background: #f2b179; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.2381), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+.tile.tile-16 .tile-inner { background: #f59563; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.3175), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+.tile.tile-32 .tile-inner { background: #f67c5f; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.3969), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+.tile.tile-64 .tile-inner { background: #f65e3b; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.4763), inset 0 0 0 1px rgba(255, 255, 255, 0); }
+.tile.tile-128 .tile-inner { background: #edcf72; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.5557), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
+.tile.tile-256 .tile-inner { background: #edcc61; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.6351), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
+.tile.tile-512 .tile-inner { background: #edc850; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.7145), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 45px; }
+.tile.tile-1024 .tile-inner { background: #edc53f; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.7938), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 35px; }
+.tile.tile-2048 .tile-inner { background: #edc22e; color: #f9f6f2; box-shadow: 0 0 30px 10px rgba(243, 215, 116, 0.8732), inset 0 0 0 1px rgba(255, 255, 255, 0); font-size: 35px; }
 
-.game-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    width: 500px; /* اصلی: 500px */
+@media screen and (max-width: 520px) {
+  .heading {
+    width: 100%;
+  }
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .grid-container {
+    width: 280px;
+    height: 280px;
+  }
+  .tile, .tile .tile-inner {
+    width: 57px;
+    height: 57px;
+    line-height: 57px;
+    font-size: 35px;
+  }
+  .grid-cell {
+    width: 57px;
+    height: 57px;
+    margin-right: 3px;
+  }
+  .grid-row {
+    margin-bottom: 3px;
+  }
+  .scores-container {
+    float: none;
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .score-container, .best-container {
+    margin-top: 0;
+    margin-bottom: 5px;
+  }
 }
 
-#back-to-dashboard {
-    background: #bbada0;
-    font-size: 14px;
-    padding: 5px 10px;
+button {
+  background: #8f7a66;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.leaderboard {
-    margin-top: 20px;
-    text-align: left;
-    width: 500px;
+button:hover {
+  background: #bbada0;
 }
 
-.leaderboard ul {
-    list-style: none;
-    padding: 0;
+input {
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #bbada0;
+  border-radius: 5px;
+  width: 200px;
 }
 
-.leaderboard li {
-    background: #bbada0;
-    color: white;
-    padding: 5px;
-    margin: 2px 0;
-    border-radius: 3px;
+#timer {
+  font-size: 20px;
+  font-weight: bold;
+  color: #776e65;
 }
+
+.game-message {
+  text-align: center;
+  margin: 10px 0;
+}
+
+#leaderboard ul {
+  list-style: none;
+  padding: 0;
+}
+
+#leaderboard li {
+  background: #bbada0;
+  color: white;
+  padding: 5px;
+  margin: 2px 0;
+  border-radius: 3px;
+}
+</style>
+</head>
+<body dir="rtl">
+  <div class="container">
+    <div class="heading">
+      <h1 class="title">2048 چَلِنج</h1>
+      <div class="scores-container">
+        <div class="score-container" id="score">0</div>
+        <div class="best-container" id="best">0</div>
+      </div>
+    </div>
+
+    <div id="auth-section" style="text-align:center; margin: 20px;">
+      <button id="googleLogin">ورود با گوگل</button>
+      <button id="guestLogin">ورود به عنوان مهمان</button>
+      <div id="nameInput" style="display:none; margin-top:10px;">
+        <input id="guestName" placeholder="نام خود را وارد کنید">
+        <button id="saveGuestName">ادامه</button>
+      </div>
+    </div>
+
+    <div id="challenge-section" style="display:none; text-align:center;">
+      <button id="createChallenge">ساخت چالش جدید</button>
+      <div id="challengeForm" style="display:none; margin-top:10px;">
+        <input id="challengeName" placeholder="نام چالش">
+        <input id="challengeTime" type="number" placeholder="مدت (دقیقه)">
+        <button id="startChallenge">شروع</button>
+      </div>
+      <div id="leaderboard" style="margin-top:20px;"></div>
+    </div>
+
+    <div id="game-section" style="display:none;">
+      <div class="game-container">
+        <div class="grid-container">
+          <div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div><div class="grid-row">
+            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+          </div>
+        </div>
+        <div class="tile-container"></div>
+      </div>
+      <p id="timer" style="text-align:center; margin-top:10px;">زمان باقی‌مانده: 30:00</p>
+      <div class="game-message">
+        <p id="game-over" style="display:none;">بازی تمام شد!</p>
+        <button id="new-game" style="display:none;">بازی جدید</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
