@@ -39,7 +39,9 @@ body {
   text-align: left;
   position: relative;
   display: flex;
-  gap: 10px;
+  flex-direction: row-reverse; /* فیکس RTL: امتیاز و بهترین از راست */
+  gap: 20px; /* فیکس باگ: فاصله بین امتیازها */
+  margin-top: 10px; /* فیکس باگ: بالاتر از صفحه اول */
 }
 
 .score-container, .best-container {
@@ -75,6 +77,32 @@ body {
 
 .best-container:after {
   content: "بهترین";
+}
+
+#auth-section {
+  text-align: center;
+  margin: 20px 0;
+  padding: 20px; /* فیکس باگ: فاصله از عنوان */
+}
+
+#auth-section button {
+  display: block;
+  margin: 10px auto; /* فیکس باگ: وسط و فاصله */
+  width: 200px; /* فیکس باگ: عرض ثابت */
+}
+
+#nameInput {
+  margin-top: 10px;
+}
+
+#nameInput input, #nameInput button {
+  display: block;
+  margin: 5px auto;
+}
+
+#challenge-section, #game-section {
+  width: 100%;
+  margin: 20px 0;
 }
 
 .grid-container {
