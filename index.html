@@ -16,10 +16,10 @@
       </div>
     </div>
 
-    <div id="auth-section" style="text-align:center; margin: 20px;">
+    <div id="auth-section">
       <button id="googleLogin">ورود با گوگل</button>
       <button id="guestLogin">ورود به عنوان مهمان</button>
-      <div id="nameInput" style="display:none; margin-top:10px;">
+      <div id="nameInput" style="display:none;">
         <input id="guestName" placeholder="نام خود را وارد کنید">
         <button id="saveGuestName">ادامه</button>
       </div>
@@ -27,12 +27,12 @@
 
     <div id="challenge-section" style="display:none; text-align:center;">
       <button id="createChallenge">ساخت چالش جدید</button>
-      <div id="challengeForm" style="display:none; margin-top:10px;">
+      <div id="challengeForm" style="display:none;">
         <input id="challengeName" placeholder="نام چالش">
         <input id="challengeTime" type="number" placeholder="مدت (دقیقه)">
         <button id="startChallenge">شروع</button>
       </div>
-      <div id="leaderboard" style="margin-top:20px;"></div>
+      <div id="leaderboard"></div>
     </div>
 
     <div id="game-section" style="display:none;">
@@ -50,7 +50,7 @@
         </div>
         <div class="tile-container"></div>
       </div>
-      <p id="timer" style="text-align:center; margin-top:10px;">زمان باقی‌مانده: 30:00</p>
+      <p id="timer">زمان باقی‌مانده: 30:00</p>
       <div class="game-message">
         <p id="game-over" style="display:none;">بازی تمام شد!</p>
         <button id="new-game" style="display:none;">بازی جدید</button>
@@ -58,6 +58,6 @@
     </div>
   </div>
 
-  <script type="module" src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
