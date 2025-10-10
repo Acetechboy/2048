@@ -1,128 +1,51 @@
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-  <meta charset="UTF-8">
-  <title>بازی 2048 ساده</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>بازی 2048</h1>
-    <div class="grid-container">
-      <!-- جدول ۴×۴ -->
-      <div class="grid-row">
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-      </div>
-      <div class="grid-row">
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-      </div>
-      <div class="grid-row">
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-      </div>
-      <div class="grid-row">
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-        <div class="grid-cell"></div>
-      </div>
-
-      <!-- مکعب‌ها -->
-      <div class="tile tile-2 tile-position-4-1">
-        <div class="tile-inner">2</div>
-      </div>
-      <div class="tile tile-4 tile-position-4-2">
-        <div class="tile-inner">4</div>
-      </div>
-      <div class="tile tile-2 tile-position-4-3">
-        <div class="tile-inner">2</div>
-      </div>
-      <div class="tile tile-2 tile-position-3-1">
-        <div class="tile-inner">2</div>
-      </div>
-      <div class="tile tile-4 tile-position-3-2">
-        <div class="tile-inner">4</div>
-      </div>
-      <div class="tile tile-4 tile-position-3-3">
-        <div class="tile-inner">4</div>
-      </div>
-      <div class="tile tile-4 tile-position-2-1">
-        <div class="tile-inner">4</div>
-      </div>
-      <div class="tile tile-2 tile-position-2-2">
-        <div class="tile-inner">2</div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>
-body {
-  margin: 0;
-  padding: 0;
-  background: #faf8ef;
-  font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
-  direction: rtl;
-}
-
-.container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
-}
-
 .grid-container {
-  position: relative;
-  width: 428px;
-  height: 428px;
-  margin: 0 auto;
-  background: #bbada0;
-  border-radius: 6px;
-  padding: 10px;
-  box-sizing: border-box;
+    position: relative;
+    width: 428px;
+    height: 428px;
+    margin: 0 auto;
+    background: #bbada0; /* پس‌زمینه جدول مشخص‌تر شد */
+    padding: 10px;
+    box-sizing: border-box;
+    direction: ltr;
+    border-radius: 6px;
 }
 
+/* هر ردیف از جدول */
 .grid-row {
-  display: flex;
-  margin-bottom: 10px;
+    display: flex;
+    margin-bottom: 10px;
 }
 
+/* هر خانه از جدول */
 .grid-cell {
-  width: 97px;
-  height: 97px;
-  margin-right: 10px;
-  background: rgba(238, 228, 218, 0.35);
-  border-radius: 3px;
+    width: 97px;
+    height: 97px;
+    margin-right: 10px;
+    background: rgba(238, 228, 218, 0.35);
+    border-radius: 3px;
 }
 
+/* مکعب‌ها */
 .tile {
-  position: absolute;
-  width: 97px;
-  height: 97px;
-  transition: 300ms ease-in-out;
+    position: absolute;
+    width: 97px;
+    height: 97px;
+    transition: 300ms ease-in-out;
 }
 
-.tile-inner {
-  width: 97px;
-  height: 97px;
-  line-height: 97px;
-  text-align: center;
-  font-size: 45px;
-  font-weight: bold;
-  border-radius: 3px;
-  background: #eee4da;
-  color: #776e65;
+.tile .tile-inner {
+    width: 97px;
+    height: 97px;
+    line-height: 97px;
+    text-align: center;
+    font-size: 45px;
+    font-weight: bold;
+    border-radius: 3px;
+    background: #eee4da;
+    color: #776e65;
 }
 
-/* موقعیت مکعب‌ها */
+/* موقعیت مکعب‌ها در جدول */
 .tile-position-1-1 { transform: translate(0px, 0px); }
 .tile-position-1-2 { transform: translate(107px, 0px); }
 .tile-position-1-3 { transform: translate(214px, 0px); }
@@ -139,16 +62,3 @@ body {
 .tile-position-4-2 { transform: translate(107px, 321px); }
 .tile-position-4-3 { transform: translate(214px, 321px); }
 .tile-position-4-4 { transform: translate(321px, 321px); }
-
-/* رنگ‌های مختلف برای اعداد */
-.tile-2 .tile-inner { background: #eee4da; }
-.tile-4 .tile-inner { background: #ede0c8; }
-.tile-8 .tile-inner { background: #f2b179; color: #f9f6f2; }
-.tile-16 .tile-inner { background: #f59563; color: #f9f6f2; }
-.tile-32 .tile-inner { background: #f67c5f; color: #f9f6f2; }
-.tile-64 .tile-inner { background: #f65e3b; color: #f9f6f2; }
-.tile-128 .tile-inner { background: #edcf72; color: #f9f6f2; font-size: 35px; }
-.tile-256 .tile-inner { background: #edcc61; color: #f9f6f2; font-size: 35px; }
-.tile-512 .tile-inner { background: #edc850; color: #f9f6f2; font-size: 35px; }
-.tile-1024 .tile-inner { background: #edc53f; color: #f9f6f2; font-size: 30px; }
-.tile-2048 .tile-inner { background: #edc22e; color: #f9f6f2; font-size: 30px; }
