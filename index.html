@@ -1,63 +1,78 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <title>2048 چَلِنج</title>
-  <link rel="stylesheet" href="style.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>2048 شخصی‌سازی‌شده</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 </head>
-<body dir="rtl">
-  <div class="container">
-    <div class="heading">
-      <h1 class="title">2048 چَلِنج</h1>
-      <div class="scores-container">
-        <div class="score-container" id="score">0</div>
-        <div class="best-container" id="best">0</div>
-      </div>
-    </div>
-
-    <div id="auth-section">
-      <button id="googleLogin">ورود با گوگل</button>
-      <button id="guestLogin">ورود به عنوان مهمان</button>
-      <div id="nameInput" style="display:none;">
-        <input id="guestName" placeholder="نام خود را وارد کنید">
-        <button id="saveGuestName">ادامه</button>
-      </div>
-    </div>
-
-    <div id="challenge-section" style="display:none;">
-      <button id="createChallenge">ساخت چالش جدید</button>
-      <div id="challengeForm" style="display:none;">
-        <input id="challengeName" placeholder="نام چالش">
-        <input id="challengeTime" type="number" placeholder="مدت (دقیقه)">
-        <button id="startChallenge">شروع</button>
-      </div>
-      <div id="leaderboard"></div>
-    </div>
-
-    <div id="game-section" style="display:none;">
-      <div class="game-container">
-        <div class="grid-container">
-          <div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div><div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div><div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div><div class="grid-row">
-            <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
-          </div>
+<body>
+    <!-- صفحه ورود -->
+    <div id="login-page" class="container">
+        <h1>به 2048 خوش آمدید!</h1>
+        <button id="guest-btn">ورود مهمان</button>
+        <button id="google-btn">ورود با گوگل</button>
+        <div id="guest-name-input" style="display: none;">
+            <input type="text" id="guest-name" placeholder="نام خود را وارد کنید">
+            <button id="submit-guest">ورود</button>
         </div>
-        <div class="tile-container"></div>
-      </div>
-      <p id="timer">زمان باقی‌مانده: 30:00</p>
-      <div class="game-message">
-        <p id="game-over" style="display:none;">بازی تمام شد!</p>
-        <button id="new-game" style="display:none;">بازی جدید</button>
-      </div>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <!-- داشبورد بعد از ورود -->
+    <div id="dashboard" style="display: none;" class="container">
+        <h2 id="welcome-msg">خوش آمدید!</h2>
+        <button id="create-challenge-btn">ساخت چلنج</button>
+        <button id="test-game-btn">بازی تستی</button>
+        <div id="challenge-form" style="display: none;">
+            <input type="text" id="challenge-name" placeholder="نام چلنج">
+            <input type="datetime-local" id="start-date">
+            <input type="datetime-local" id="end-date">
+            <button id="submit-challenge">ساخت چلنج</button>
+        </div>
+        <div id="challenge-link" style="display: none;"></div>
+        <div id="leaderboard" style="display: none;"></div>
+    </div>
+
+    <!-- صفحه بازی 2048 -->
+    <div id="game-container" style="display: none;" class="container">
+        <div class="game-info">
+            <span id="score">امتیاز: 0</span>
+            <span id="best">بهترین: 0</span>
+            <button id="save-score" style="display: none;">ذخیره امتیاز</button>
+            <button id="back-to-dashboard">بازگشت به داشبورد</button>
+        </div>
+        <div class="grid-container">
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+            <div class="grid-row">
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+        </div>
+        <p class="game-message" id="game-message"></p>
+        <button id="new-game">بازی جدید</button>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
